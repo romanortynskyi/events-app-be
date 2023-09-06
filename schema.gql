@@ -1,0 +1,58 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type UserEntity {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  recoveryCode: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type UserWithToken {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  recoveryCode: String!
+  token: String!
+}
+
+type Query {
+  getMe: UserEntity!
+}
+
+type Mutation {
+  signUp(input: SignUpInput!): UserWithToken!
+  login(input: LoginInput!): UserWithToken!
+  sendResetPasswordEmail(input: ForgotPasswordInput!): Boolean!
+}
+
+input SignUpInput {
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input ForgotPasswordInput {
+  email: String!
+  language: String!
+}

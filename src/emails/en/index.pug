@@ -1,0 +1,20 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        meta(name='viewport' content='width=device-width, initial-scale=1')
+        style
+            include ../css/index.css
+    body
+        header
+            block title
+            block description
+        main
+            .info 
+                div
+                p This is an automated email. Do not reply to this. You received this email because you are registered with
+                    a #{email}
+                    |  at <br/> GeeksGoneWild
+        footer
+            h3 GeeksGoneWild
+            p &copy; 2023 GeeksGoneWild. All rights reserved.
