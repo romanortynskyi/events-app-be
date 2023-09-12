@@ -6,6 +6,7 @@ import { UserEntity } from './src/entities/user.entity'
 import { FileEntity } from './src/entities/file.entity'
 import AddUserEntity1693680054416 from './migrations/1693680054416-add-user-entity'
 import AddFileEntity1693721031439 from './migrations/1693721031439-add-file-entity'
+import AddUserImage1694070673927 from './migrations/1694070673927-add-user-image'
 
 config({
   path: '.env.local',
@@ -27,5 +28,6 @@ export default new DataSource({
   migrations: [
     AddUserEntity1693680054416,
     AddFileEntity1693721031439,
+    AddUserImage1694070673927
   ],
 })

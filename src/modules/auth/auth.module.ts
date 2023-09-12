@@ -7,10 +7,14 @@ import { JwtModule } from '@nestjs/jwt'
 import { UploadModule } from '../upload/upload.module'
 import { EmailModule } from '../email/email.module'
 import { JwtStrategy } from './strategy'
+import { FileEntity } from 'src/entities/file.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      FileEntity,
+    ]),
     JwtModule.register({}),
     UploadModule,
     EmailModule,

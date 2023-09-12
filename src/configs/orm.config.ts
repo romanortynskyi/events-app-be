@@ -1,5 +1,6 @@
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm'
+import { FileEntity } from 'src/entities/file.entity';
 
 import { UserEntity } from 'src/entities/user.entity'
 
@@ -15,6 +16,7 @@ export const ormOptions: TypeOrmModuleAsyncOptions = {
     database: configService.get('DATABASE_NAME'),
     entities: [
       UserEntity,
+      FileEntity,
     ],
     logging: true,
   }),

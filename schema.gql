@@ -2,6 +2,20 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type FileEntity {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  src: String
+  filename: String
+  provider: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type UserEntity {
   id: Float!
   createdAt: DateTime!
@@ -11,12 +25,8 @@ type UserEntity {
   email: String!
   password: String!
   recoveryCode: String!
+  image: FileEntity!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type UserWithToken {
   id: Float!
@@ -27,16 +37,29 @@ type UserWithToken {
   email: String!
   password: String!
   recoveryCode: String!
+  image: FileEntity!
   token: String!
+}
+
+type GeolocationEntity {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  country: String
+  locality: String
+  route: String
+  streetNumber: String
 }
 
 type Query {
   getMe: UserEntity!
+  getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
 }
 
 type Mutation {
   signUp(input: SignUpInput!): UserWithToken!
   login(input: LoginInput!): UserWithToken!
+  loginWithGoogle(idToken: String!): UserWithToken!
   sendResetPasswordEmail(input: ForgotPasswordInput!): Boolean!
 }
 

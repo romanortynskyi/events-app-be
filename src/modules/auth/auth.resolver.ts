@@ -1,13 +1,13 @@
 import { UseGuards } from '@nestjs/common'
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql'
 
-import { UserEntity } from 'src/entities/user.entity'
+import { UserEntity } from '../../entities/user.entity'
 import SignUpInput from './inputs/sign-up.input'
 import { AuthService } from './auth.service'
 import LoginInput from './inputs/login.input'
 import UserWithToken from './user-with-token'
 import ForgotPasswordInput from './inputs/forgot-password.input'
-import { CurrentUser } from 'src/decorators/current-user'
+import { CurrentUser } from '../../decorators/current-user'
 import { JwtGuard } from './guards'
 
 @Resolver(UserEntity)
@@ -22,6 +22,11 @@ class AuthResolver {
   @Mutation(() => UserWithToken)
   login(@Args('input') input: LoginInput) {
     return this.authService.login(input)
+  }
+
+  @Mutation(() => UserWithToken)
+  loginWithGoogle(@Args('idToken') idToken: string) {
+    return this.authService.loginWithGoogle(idToken)
   }
 
   @Mutation(() => Boolean)

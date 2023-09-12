@@ -9,7 +9,9 @@ import * as argon from 'argon2'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { DataSource, Repository } from 'typeorm'
+import { OAuth2Client } from 'google-auth-library'
+import { instanceToPlain } from 'class-transformer'
 
 import { UserEntity } from 'src/entities/user.entity'
 import { getObjectWithoutKeys } from 'src/utils/get-object-without-keys'
@@ -28,6 +30,8 @@ import LoginInput from './inputs/login.input'
 import ForgotPasswordInput from './inputs/forgot-password.input'
 import ResetPasswordInput from './inputs/reset-password.input'
 import VerifyRecoveryCodeInput from './inputs/verify-recovery-code.input'
+import FileProvider from 'src/enums/file-provider.enum'
+import { FileEntity } from 'src/entities/file.entity'
 
 @Injectable()
 export class AuthService {
@@ -38,12 +42,13 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly uploadService: UploadService,
     private readonly emailService: EmailService,
+    private dataSource: DataSource,
   ) {}
 
   signToken(user: UserEntity) {
     const secret = this.configService.get('JWT_SECRET')
 
-    return this.jwtService.signAsync(user, {
+    return this.jwtService.signAsync(instanceToPlain(user), {
       expiresIn: '365d',
       secret,
     })
@@ -115,6 +120,70 @@ export class AuthService {
     }
 
     return userWithToken
+  }
+
+  async loginWithGoogle(idToken: string) {
+    const client = new OAuth2Client()
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: this.configService.get('GOOGLE_CLIENT_ID'),
+    })
+    
+
+    const {
+      email,
+      picture,
+      given_name,
+      family_name,
+    } = ticket.getPayload()
+
+    const userByEmail = await this.userRepository.findOneBy({ email })
+
+    if (userByEmail) {
+      const token = await this.signToken(userByEmail)
+      const userWithToken = {
+        ...userByEmail,
+        token,
+      }
+
+      return userWithToken
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner()
+
+    await queryRunner.startTransaction()
+
+    try {
+      const imageEntity = queryRunner.manager.getRepository(FileEntity).create({
+        src: picture,
+        provider: FileProvider.Google,
+      })
+
+      await queryRunner.manager.save(imageEntity)
+
+      const userEntity = queryRunner.manager.getRepository(UserEntity).create({
+        email,
+        firstName: given_name,
+        lastName: family_name,
+        image: imageEntity,
+      })
+
+      await queryRunner.manager.save(userEntity)
+
+      const token = await this.signToken(userEntity)
+
+      await queryRunner.commitTransaction()
+
+      return {
+        ...userEntity,
+        token,
+      }
+    }
+
+    catch (error) {
+      console.log(error)
+      await queryRunner.rollbackTransaction()
+    }
   }
 
   async sendResetPasswordEmail(input: ForgotPasswordInput) {
