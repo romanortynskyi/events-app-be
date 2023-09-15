@@ -36,8 +36,10 @@ export class GeolocationService {
         },
       },
     )
-console.log(response.data.results[0].address_components)
+
     return {
+      latitude,
+      longitude,
       country: this.getCountry(response.data.results[0].address_components),
       locality: this.getLocality(response.data.results[0].address_components),
       route: this.getRoute(response.data.results[0].address_components),

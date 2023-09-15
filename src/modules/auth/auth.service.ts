@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
 import { OAuth2Client } from 'google-auth-library'
+import Axios from 'axios'
 import { instanceToPlain } from 'class-transformer'
 
 import { UserEntity } from 'src/entities/user.entity'
@@ -32,6 +33,7 @@ import ResetPasswordInput from './inputs/reset-password.input'
 import VerifyRecoveryCodeInput from './inputs/verify-recovery-code.input'
 import FileProvider from 'src/enums/file-provider.enum'
 import { FileEntity } from 'src/entities/file.entity'
+import AuthProvider from 'src/enums/auth-provider.enum'
 
 @Injectable()
 export class AuthService {
@@ -76,12 +78,72 @@ export class AuthService {
     const user = await this.userRepository.save(userToInsert)
     const userWithoutPassword = getObjectWithoutKeys(user, ['password'])
     const token = await this.signToken(userWithoutPassword)
-    const userWithToken = {
+    const userToSend = {
       ...userWithoutPassword,
       token,
+      provider: AuthProvider.Email,
     }
 
-    return userWithToken
+    return userToSend
+  }
+
+  async ensureUserExists(user) {
+    const {
+      email,
+      image,
+      firstName,
+      lastName,
+      provider,
+    } = user
+
+    const userByEmail = await this.userRepository.findOneBy({ email })
+
+    if (userByEmail) {
+      const token = await this.signToken(userByEmail)
+      const userWithToken = {
+        ...userByEmail,
+        token,
+      }
+
+      return userWithToken
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner()
+
+    await queryRunner.startTransaction()
+
+    try {
+      const imageEntity = queryRunner.manager.getRepository(FileEntity).create({
+        src: image.src,
+        provider: image.provider,
+      })
+
+      await queryRunner.manager.save(imageEntity)
+
+      const userEntity = queryRunner.manager.getRepository(UserEntity).create({
+        email,
+        firstName,
+        lastName,
+        image: imageEntity,
+      })
+
+      await queryRunner.manager.save(userEntity)
+
+      const token = await this.signToken(userEntity)
+
+      await queryRunner.commitTransaction()
+
+      return {
+        ...userEntity,
+        token,
+        provider,
+      }
+    }
+
+    catch (error) {
+      console.log(error)
+      await queryRunner.rollbackTransaction()
+    }
   }
 
   async login(input: LoginInput) {
@@ -102,7 +164,7 @@ export class AuthService {
       ],
     })
 
-    if (!user) {
+    if (!user || !user.password) {
       throw new UnauthorizedException(WRONG_EMAIL_OR_PASSWORD)
     }
 
@@ -114,12 +176,13 @@ export class AuthService {
 
     const userWithoutPassword = getObjectWithoutKeys(user, ['password'])
     const token = await this.signToken(userWithoutPassword)
-    const userWithToken = {
+    const userToSend = {
       ...userWithoutPassword,
       token,
+      provider: AuthProvider.Email,
     }
 
-    return userWithToken
+    return userToSend
   }
 
   async loginWithGoogle(idToken: string) {
@@ -132,58 +195,62 @@ export class AuthService {
 
     const {
       email,
-      picture,
-      given_name,
-      family_name,
+      picture: imgSrc,
+      given_name: firstName,
+      family_name: lastName,
     } = ticket.getPayload()
 
-    const userByEmail = await this.userRepository.findOneBy({ email })
-
-    if (userByEmail) {
-      const token = await this.signToken(userByEmail)
-      const userWithToken = {
-        ...userByEmail,
-        token,
-      }
-
-      return userWithToken
-    }
-
-    const queryRunner = this.dataSource.createQueryRunner()
-
-    await queryRunner.startTransaction()
-
-    try {
-      const imageEntity = queryRunner.manager.getRepository(FileEntity).create({
-        src: picture,
+    const user = await this.ensureUserExists({
+      email,
+      image: {
+        src: imgSrc,
         provider: FileProvider.Google,
-      })
+      },
+      firstName,
+      lastName,
+      provider: AuthProvider.Google,
+    })
 
-      await queryRunner.manager.save(imageEntity)
+    return user
+  }
 
-      const userEntity = queryRunner.manager.getRepository(UserEntity).create({
-        email,
-        firstName: given_name,
-        lastName: family_name,
-        image: imageEntity,
-      })
+  async loginWithFacebook(accessToken: string) {
+    const { data } = await Axios.get(
+      'https://graph.facebook.com/me',
+      {
+        params: {
+          fields: [
+            'email',
+            'first_name',
+            'last_name',
+            'picture.width(200)',
+          ].join(','),
+          access_token: accessToken,
+        },
+      },
+    )
 
-      await queryRunner.manager.save(userEntity)
+    const {
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      picture: {
+        url: imgSrc,
+      },
+    } = data
 
-      const token = await this.signToken(userEntity)
+    const user = await this.ensureUserExists({
+      email,
+      firstName,
+      lastName,
+      image: {
+        src: imgSrc,
+        provider: FileProvider.Facebook,
+      },
+      provider: AuthProvider.Facebook,
+    })
 
-      await queryRunner.commitTransaction()
-
-      return {
-        ...userEntity,
-        token,
-      }
-    }
-
-    catch (error) {
-      console.log(error)
-      await queryRunner.rollbackTransaction()
-    }
+    return user
   }
 
   async sendResetPasswordEmail(input: ForgotPasswordInput) {
@@ -263,6 +330,9 @@ export class AuthService {
       id,
     })
 
-    return user
+    return {
+      ...user,
+      token: bearerToken,
+    }
   }
 }

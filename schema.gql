@@ -39,12 +39,15 @@ type UserWithToken {
   recoveryCode: String!
   image: FileEntity!
   token: String!
+  provider: String!
 }
 
 type GeolocationEntity {
   id: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
+  latitude: Float!
+  longitude: Float!
   country: String
   locality: String
   route: String
@@ -60,6 +63,7 @@ type Mutation {
   signUp(input: SignUpInput!): UserWithToken!
   login(input: LoginInput!): UserWithToken!
   loginWithGoogle(idToken: String!): UserWithToken!
+  loginWithFacebook(accessToken: String!): UserWithToken!
   sendResetPasswordEmail(input: ForgotPasswordInput!): Boolean!
 }
 

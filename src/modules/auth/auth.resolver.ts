@@ -29,6 +29,11 @@ class AuthResolver {
     return this.authService.loginWithGoogle(idToken)
   }
 
+  @Mutation(() => UserWithToken)
+  loginWithFacebook(@Args('accessToken') accessToken: string) {
+    return this.authService.loginWithFacebook(accessToken)
+  }
+
   @Mutation(() => Boolean)
   sendResetPasswordEmail(@Args('input') input: ForgotPasswordInput) {
     return this.authService.sendResetPasswordEmail(input)
