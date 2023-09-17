@@ -38,16 +38,17 @@ export class UploadService {
 
   async uploadFile(
     file,
+    folder: string,
     progressCallback: (progress: AWS.S3.ManagedUpload.Progress) => void,
   ) {
-    const { originalname, buffer } = file
-    const extension = path.extname(originalname)
+    const { filename, createReadStream } = await file
+    const extension = path.extname(filename)
 
-    const key = `${uuid()}${extension}`
+    const key = path.join(folder, `${uuid()}${extension}`)
     const params: AWS.S3.PutObjectRequest = {
       Bucket: this.bucket,
       Key: key,
-      Body: buffer,
+      Body: createReadStream(),
       ACL: 'public-read',
       ContentType: file.mimetype,
       ContentDisposition: 'inline',
@@ -55,7 +56,7 @@ export class UploadService {
 
     try {
       const s3Response = await this._upload(params, progressCallback)
-
+console.log(s3Response)
       return s3Response
     } catch (e) {
       console.log(e)

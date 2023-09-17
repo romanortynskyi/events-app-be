@@ -36,8 +36,9 @@ export class GeolocationService {
         },
       },
     )
-
+    
     return {
+      placeId: response.data.results[0].place_id,
       latitude,
       longitude,
       country: this.getCountry(response.data.results[0].address_components),

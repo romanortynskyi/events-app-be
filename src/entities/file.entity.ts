@@ -13,7 +13,7 @@ export class FileEntity extends BaseEntity {
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  filename: string
+  filename?: string
 
   @Field()
   @Column({ default: FileProvider.Custom })

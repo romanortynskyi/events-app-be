@@ -9,7 +9,9 @@ import { envConfig } from './configs/env.config'
 import AuthResolver from './modules/auth/auth.resolver'
 import { AuthModule } from './modules/auth/auth.module'
 import { GeolocationModule } from './modules/geolocation/geolocation.module'
+import { EventModule } from './modules/event/event.module'
 import GeolocationResolver from './modules/geolocation/geolocation.resolver'
+import EventResolver from './modules/event/event.resolver'
 
 @Module({
   imports: [
@@ -22,10 +24,12 @@ import GeolocationResolver from './modules/geolocation/geolocation.resolver'
     TypeOrmModule.forRootAsync(ormOptions),
     AuthModule,
     GeolocationModule,
+    EventModule,
   ],
   providers: [
     AuthResolver,
     GeolocationResolver,
+    EventResolver,
   ],
 })
 

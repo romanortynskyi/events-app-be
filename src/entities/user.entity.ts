@@ -2,12 +2,14 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
 } from 'typeorm'
 import { Field, ObjectType } from '@nestjs/graphql'
 
 import { BaseEntity } from './base.entity'
 import { FileEntity } from './file.entity'
+import { EventEntity } from './event.entity'
 
 @ObjectType()
 @Entity('user')
@@ -36,4 +38,8 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => FileEntity, { nullable: true })
   @JoinColumn()
   image: FileEntity
+
+  @Field(() => EventEntity)
+  @OneToMany(() => EventEntity, (event) => event.author)
+  events: EventEntity[]
 }

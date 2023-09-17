@@ -8,6 +8,10 @@ import { BaseEntity } from './base.entity'
 class GeolocationEntity extends BaseEntity {
   @Field({ nullable: false })
   @Column({ nullable: false })
+  placeId: string
+
+  @Field({ nullable: false })
+  @Column({ nullable: false })
   latitude: number
 
   @Field({ nullable: false })

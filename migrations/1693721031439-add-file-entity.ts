@@ -9,7 +9,7 @@ class AddFileEntity1693721031439 implements MigrationInterface {
         "id" SERIAL NOT NULL,
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-        "src" character varying NOT NULL,
+        "src" character varying,
         "filename" character varying,
         "provider" character varying NOT NULL DEFAULT 'custom',
         CONSTRAINT "PK_36b46d232307066b3a2c9ea3a1d" PRIMARY KEY ("id"))
