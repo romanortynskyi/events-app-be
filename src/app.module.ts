@@ -12,6 +12,7 @@ import { GeolocationModule } from './modules/geolocation/geolocation.module'
 import { EventModule } from './modules/event/event.module'
 import GeolocationResolver from './modules/geolocation/geolocation.resolver'
 import EventResolver from './modules/event/event.resolver'
+import { PlaceModule } from './modules/place/place.module'
 
 @Module({
   imports: [

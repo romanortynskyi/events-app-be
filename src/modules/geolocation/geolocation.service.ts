@@ -8,20 +8,20 @@ import GeolocationEntity from 'src/entities/geolocation.entity'
 export class GeolocationService {
   constructor(private readonly configService: ConfigService) {}
 
-  getCountry(response): string {
-    return response.filter((item) => item.types.includes('country'))[0].long_name
+  getCountry(addressComponents): string {
+    return addressComponents.filter((item) => item.types.includes('country'))[0].long_name
   }
 
-  getLocality(response): string {
-    return response.filter((item) => item.types.includes('locality'))[0].long_name
+  getLocality(addressComponents): string {
+    return addressComponents.filter((item) => item.types.includes('locality'))[0].long_name
   }
 
-  getRoute(response): string {
-    return response.filter((item) => item.types.includes('route'))[0].long_name
+  getRoute(addressComponents): string {
+    return addressComponents.filter((item) => item.types.includes('route'))[0].long_name
   }
 
-  getStreetNumber(response): string {
-    const partsWithStreetNumber = response.filter((item) => item.types.includes('street_number'))
+  getStreetNumber(addressComponents): string {
+    const partsWithStreetNumber = addressComponents.filter((item) => item.types.includes('street_number'))
     return partsWithStreetNumber.length ? partsWithStreetNumber[0].long_name : null
   }
 

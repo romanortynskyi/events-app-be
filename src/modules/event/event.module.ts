@@ -5,6 +5,8 @@ import { UserEntity } from 'src/entities/user.entity'
 import { EventEntity } from 'src/entities/event.entity'
 import { UploadModule } from '../upload/upload.module'
 import { FileEntity } from 'src/entities/file.entity'
+import { PlaceModule } from '../place/place.module'
+import { GeolocationModule } from '../geolocation/geolocation.module'
 
 @Module({
   providers: [EventService],
@@ -15,6 +17,8 @@ import { FileEntity } from 'src/entities/file.entity'
       FileEntity,
     ]),
     UploadModule,
+    PlaceModule,
+    GeolocationModule,
   ],
   exports: [EventService],
 })

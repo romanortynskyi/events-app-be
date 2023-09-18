@@ -56,7 +56,7 @@ export class UploadService {
 
     try {
       const s3Response = await this._upload(params, progressCallback)
-console.log(s3Response)
+
       return s3Response
     } catch (e) {
       console.log(e)

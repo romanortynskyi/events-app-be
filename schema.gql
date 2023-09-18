@@ -71,9 +71,47 @@ type GeolocationEntity {
   streetNumber: String
 }
 
+type Location {
+  lat: Float!
+  lng: Float!
+}
+
+type Geometry {
+  location: Location!
+}
+
+type Place {
+  name: String!
+  url: String!
+  geometry: Geometry!
+  country: String!
+  locality: String!
+}
+
+type Event {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  placeId: String
+  title: String
+  description: String
+  startDate: DateTime!
+  endDate: DateTime!
+  ticketPrice: Float!
+  author: UserEntity!
+  image: FileEntity!
+  place: Place!
+}
+
+type EventPage {
+  items: [Event!]!
+  totalPagesCount: Int!
+}
+
 type Query {
   getMe: UserEntity!
   getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
+  getEvents(skip: Float!, limit: Float!): EventPage!
 }
 
 type Mutation {
