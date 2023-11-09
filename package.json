@@ -32,6 +32,7 @@
     "@nestjs/passport": "^10.0.1",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/typeorm": "^10.0.0",
+    "@opensearch-project/opensearch": "^2.4.0",
     "apollo-server-express": "^3.12.1",
     "argon2": "^0.31.1",
     "aws-sdk": "^2.1450.0",

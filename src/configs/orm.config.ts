@@ -21,4 +21,4 @@ export const ormOptions: TypeOrmModuleAsyncOptions = {
     ],
     logging: true,
   }),
-};
+}

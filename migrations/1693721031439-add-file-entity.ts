@@ -18,7 +18,7 @@ class AddFileEntity1693721031439 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-      await queryRunner.query(`DROP TABLE "file"`);
+    await queryRunner.query(`DROP TABLE "file"`)
   }
 }
 
