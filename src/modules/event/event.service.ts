@@ -10,16 +10,16 @@ import Axios from 'axios'
 import EventInput from './inputs/event.input'
 import { UserEntity } from 'src/entities/user.entity'
 import { EventEntity } from 'src/entities/event.entity'
-import { INTERNAL_SERVER_ERROR, USER_NOT_FOUND } from 'src/enums/error-messages'
+import { EVENT_NOT_FOUND, INTERNAL_SERVER_ERROR, USER_NOT_FOUND } from 'src/enums/error-messages'
 import { UploadService } from '../upload/upload.service'
 import Folder from 'src/enums/folder.enum'
 import { FileEntity } from 'src/entities/file.entity'
 import FileProvider from 'src/enums/file-provider.enum'
 import EventPage from 'src/models/event-page'
-import { ConfigService } from '@nestjs/config'
-import { instanceToPlain } from 'class-transformer'
 import { PlaceService } from '../place/place.service'
 import { GeolocationService } from '../geolocation/geolocation.service'
+import Event from '../../models/event'
+import { DistanceMatrixService } from '../distance-matrix/distance-matrix.service'
 
 @Injectable()
 export class EventService {
@@ -32,6 +32,7 @@ export class EventService {
     private readonly dataSource: DataSource,
     private readonly placeService: PlaceService,
     private readonly geolocationService: GeolocationService,
+    private readonly distanceMatrixService: DistanceMatrixService,
   ) {}
 
   parseEvent(event) {
@@ -177,6 +178,40 @@ export class EventService {
     return {
       items: events,
       totalPagesCount,
+    }
+  }
+
+  async getEventById(id: number, origin): Promise<Partial<Event>> {
+    const event = await this.eventRepository
+      .findOne({
+        where: {
+          id,
+        },
+        relations: {
+          image: true,
+          author: true,
+        },
+      })
+
+    if (!event) {
+      throw new NotFoundException(EVENT_NOT_FOUND)
+    }
+
+    const place = await this.placeService.getPlaceById(event.placeId)
+
+    const distance = await this.distanceMatrixService.getDistance({
+      origin,
+      destination: event.placeId,
+    })
+
+    return {
+      ...event,
+      place: {
+        ...place,
+        country: this.geolocationService.getCountry(place.address_components),
+        locality: this.geolocationService.getLocality(place.address_components),
+      },
+      distance,
     }
   }
 }

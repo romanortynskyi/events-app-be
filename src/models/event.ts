@@ -6,4 +6,7 @@ import Place from './place'
 export default class Event extends EventEntity {
   @Field()
   place: Place
+
+  @Field()
+  distance: number
 }

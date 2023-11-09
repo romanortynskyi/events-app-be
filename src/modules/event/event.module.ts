@@ -7,6 +7,7 @@ import { UploadModule } from '../upload/upload.module'
 import { FileEntity } from 'src/entities/file.entity'
 import { PlaceModule } from '../place/place.module'
 import { GeolocationModule } from '../geolocation/geolocation.module'
+import { DistanceMatrixModule } from '../distance-matrix/distance-matrix.module'
 
 @Module({
   providers: [EventService],
@@ -19,6 +20,7 @@ import { GeolocationModule } from '../geolocation/geolocation.module'
     UploadModule,
     PlaceModule,
     GeolocationModule,
+    DistanceMatrixModule,
   ],
   exports: [EventService],
 })

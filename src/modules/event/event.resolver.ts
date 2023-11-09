@@ -8,6 +8,7 @@ import { UseGuards } from '@nestjs/common'
 import { JwtGuard } from '../auth/guards'
 import Paginated from 'src/models/paginated'
 import EventPage from 'src/models/event-page'
+import Event from 'src/models/event'
 
 @Resolver(EventEntity)
 class EventResolver {
@@ -22,6 +23,15 @@ class EventResolver {
   @Query(() => EventPage)
   getEvents(@Args('skip') skip: number, @Args('limit') limit: number) {
     return this.eventService.getEvents({ skip, limit })
+  }
+
+  @Query(() => Event)
+  getEventById(
+    @Args('id') id: number,
+    @Args('latitude') latitude: number,
+    @Args('longitude') longitude: number,
+  ) {
+    return this.eventService.getEventById(id, { latitude, longitude })
   }
 }
 

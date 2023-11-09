@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import Axios from 'axios'
+import Place from 'src/models/place'
 
 @Injectable()
 export class PlaceService {

@@ -101,6 +101,7 @@ type Event {
   author: UserEntity!
   image: FileEntity!
   place: Place!
+  distance: Float!
 }
 
 type EventPage {
@@ -112,6 +113,7 @@ type Query {
   getMe: UserEntity!
   getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
   getEvents(skip: Float!, limit: Float!): EventPage!
+  getEventById(id: Float!, latitude: Float!, longitude: Float!): Event!
 }
 
 type Mutation {
