@@ -33,6 +33,10 @@ class EventResolver {
   ) {
     return this.eventService.getEventById(id, { latitude, longitude })
   }
+
+  @Query(() => [Event]) autocompleteEvents(@Args('query') query: string) {
+    return this.eventService.autocompleteEvents(query)
+  }
 }
 
 export default EventResolver
