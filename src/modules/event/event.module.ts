@@ -8,6 +8,7 @@ import { FileEntity } from 'src/entities/file.entity'
 import { PlaceModule } from '../place/place.module'
 import { GeolocationModule } from '../geolocation/geolocation.module'
 import { DistanceMatrixModule } from '../distance-matrix/distance-matrix.module'
+import { OpenSearchModule } from '../open-search/open-search.module'
 
 @Module({
   providers: [EventService],
@@ -21,6 +22,7 @@ import { DistanceMatrixModule } from '../distance-matrix/distance-matrix.module'
     PlaceModule,
     GeolocationModule,
     DistanceMatrixModule,
+    OpenSearchModule,
   ],
   exports: [EventService],
 })

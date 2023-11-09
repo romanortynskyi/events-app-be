@@ -21,24 +21,29 @@ export class OpenSearchService {
     
   }
 
-  async index(index, document) {
-    const settings = {
-      settings: {
-        index: {
-          number_of_shards: 4,
-          number_of_replicas: 3,
-        },
-      },
-    }
-
+  async indexExists(index: string): Promise<boolean> {
     const indexExistsResponse = await this.client.indices.exists({ index })
 
-    if (indexExistsResponse.statusCode === 404) {
-      await this.client.indices.create({
+    return indexExistsResponse.statusCode !== 404
+  }
+
+  async ensureIndexExists(index: string, body): Promise<void> {
+    const indexExists = await this.indexExists(index)
+
+    if (!indexExists) {
+      const response = await this.client.indices.create({
         index,
-        body: settings,
+        body,
       })
+
+      console.log('Index creation response:', response);
     }
+  }
+
+  async index(index: string, document) {
+    const body = {}
+
+    await this.ensureIndexExists(index, body)
 
     const response = await this.client.index({
       id: document.id,
@@ -51,6 +56,10 @@ export class OpenSearchService {
   }
 
   async search(index, query) {
+    const indexBody = {}
+
+    await this.ensureIndexExists(index, indexBody)
+
     const response = await this.client.search({
       index,
       body: query,
