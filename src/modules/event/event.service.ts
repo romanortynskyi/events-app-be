@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
-import Axios from 'axios'
 
 import EventInput from './inputs/event.input'
 import { UserEntity } from 'src/entities/user.entity'
@@ -20,6 +19,8 @@ import { PlaceService } from '../place/place.service'
 import { GeolocationService } from '../geolocation/geolocation.service'
 import Event from '../../models/event'
 import { DistanceMatrixService } from '../distance-matrix/distance-matrix.service'
+import { OpenSearchService } from '../open-search/open-search.service'
+import OpenSearchIndex from 'src/enums/open-search-index.enum'
 
 @Injectable()
 export class EventService {
@@ -33,6 +34,7 @@ export class EventService {
     private readonly placeService: PlaceService,
     private readonly geolocationService: GeolocationService,
     private readonly distanceMatrixService: DistanceMatrixService,
+    private readonly openSearchService: OpenSearchService,
   ) {}
 
   parseEvent(event) {
@@ -113,6 +115,8 @@ export class EventService {
 
       await queryRunner.commitTransaction()
 
+      await this.openSearchService.index(OpenSearchIndex.Events, eventEntity)
+
       return eventEntity
     }
 
@@ -127,7 +131,7 @@ export class EventService {
   async getEvents({ skip, limit }): Promise<EventPage> {
     const eventsFromDb = await this.eventRepository
       .query(`
-          SELECT "event"."id" AS "id", 
+          SELECT event.id AS id, 
             "event"."createdAt" AS "createdAt", 
             "event"."updatedAt" AS "updatedAt", 
             "event"."placeId" AS "placeId", 
@@ -213,5 +217,26 @@ export class EventService {
       },
       distance,
     }
+  }
+
+  async autocompleteEvents(query: string): Promise<Partial<Event>[]> {
+    const result = await this.openSearchService.search(
+      'events',
+      {
+        from: 0,
+        size: 10,
+        query: {
+          match_phrase_prefix: {
+            title: {
+              query,
+            },
+          },
+        },
+      },
+    )
+
+    const events = result.hits.map((hit) => hit._source)
+
+    return events
   }
 }
