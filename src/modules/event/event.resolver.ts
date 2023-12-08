@@ -28,14 +28,17 @@ class EventResolver {
   @Query(() => Event)
   getEventById(
     @Args('id') id: number,
-    @Args('latitude') latitude: number,
-    @Args('longitude') longitude: number,
+    @Args('originId') originId: string,
   ) {
-    return this.eventService.getEventById(id, { latitude, longitude })
+    return this.eventService.getEventById(id, originId)
   }
 
   @Query(() => [Event]) autocompleteEvents(@Args('query') query: string) {
     return this.eventService.autocompleteEvents(query)
+  }
+
+  @Query(() => [Event]) searchEvents(@Args('query') query: string) {
+    return this.eventService.searchEvents(query)
   }
 }
 

@@ -185,7 +185,7 @@ export class EventService {
     }
   }
 
-  async getEventById(id: number, origin): Promise<Partial<Event>> {
+  async getEventById(id: number, originId: string): Promise<Partial<Event>> {
     const event = await this.eventRepository
       .findOne({
         where: {
@@ -204,7 +204,7 @@ export class EventService {
     const place = await this.placeService.getPlaceById(event.placeId)
 
     const distance = await this.distanceMatrixService.getDistance({
-      origin,
+      origin: originId,
       destination: event.placeId,
     })
 

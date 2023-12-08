@@ -113,8 +113,9 @@ type Query {
   getMe: UserEntity!
   getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
   getEvents(skip: Float!, limit: Float!): EventPage!
-  getEventById(id: Float!, latitude: Float!, longitude: Float!): Event!
+  getEventById(id: Float!, originId: String!): Event!
   autocompleteEvents(query: String!): [Event!]!
+  searchEvents(query: String!): [Event!]!
 }
 
 type Mutation {
