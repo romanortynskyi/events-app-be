@@ -1,4 +1,5 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql'
+
 import EventInput from './inputs/event.input'
 import { EventService } from './event.service'
 import { EventEntity } from 'src/entities/event.entity'
@@ -6,9 +7,10 @@ import { CurrentUser } from 'src/decorators/current-user'
 import { UserEntity } from 'src/entities/user.entity'
 import { UseGuards } from '@nestjs/common'
 import { JwtGuard } from '../auth/guards'
-import Paginated from 'src/models/paginated'
 import EventPage from 'src/models/event-page'
 import Event from 'src/models/event'
+import AutocompleteEventsInput from './inputs/autocomplete-events.input'
+import SearchEventsInput from './inputs/search-events.input'
 
 @Resolver(EventEntity)
 class EventResolver {
@@ -33,12 +35,12 @@ class EventResolver {
     return this.eventService.getEventById(id, originId)
   }
 
-  @Query(() => [Event]) autocompleteEvents(@Args('query') query: string) {
-    return this.eventService.autocompleteEvents(query)
+  @Query(() => EventPage) autocompleteEvents(@Args('input') input: AutocompleteEventsInput) {
+    return this.eventService.autocompleteEvents(input)
   }
 
-  @Query(() => [Event]) searchEvents(@Args('query') query: string) {
-    return this.eventService.searchEvents(query)
+  @Query(() => EventPage) searchEvents(@Args('input') input: SearchEventsInput) {
+    return this.eventService.searchEvents(input)
   }
 }
 

@@ -9,7 +9,11 @@ import { DataSource, Repository } from 'typeorm'
 import EventInput from './inputs/event.input'
 import { UserEntity } from 'src/entities/user.entity'
 import { EventEntity } from 'src/entities/event.entity'
-import { EVENT_NOT_FOUND, INTERNAL_SERVER_ERROR, USER_NOT_FOUND } from 'src/enums/error-messages'
+import {
+  EVENT_NOT_FOUND,
+  INTERNAL_SERVER_ERROR,
+  USER_NOT_FOUND,
+} from 'src/enums/error-messages'
 import { UploadService } from '../upload/upload.service'
 import Folder from 'src/enums/folder.enum'
 import { FileEntity } from 'src/entities/file.entity'
@@ -21,6 +25,9 @@ import Event from '../../models/event'
 import { DistanceMatrixService } from '../distance-matrix/distance-matrix.service'
 import { OpenSearchService } from '../open-search/open-search.service'
 import OpenSearchIndex from 'src/enums/open-search-index.enum'
+import AutocompleteEventsInput from './inputs/autocomplete-events.input'
+import SearchEventsInput from './inputs/search-events.input'
+import parseOpenSearchEventResponse from 'src/utils/parse-open-search-event-response'
 
 @Injectable()
 export class EventService {
@@ -219,12 +226,18 @@ export class EventService {
     }
   }
 
-  async autocompleteEvents(query: string): Promise<Partial<Event>[]> {
+  async autocompleteEvents(input: AutocompleteEventsInput): Promise<Partial<Event>[]> {
+    const {
+      query,
+      skip,
+      limit,
+    } = input
+
     const result = await this.openSearchService.search(
       'events',
       {
-        from: 0,
-        size: 10,
+        from: skip,
+        size: limit,
         query: {
           match_phrase_prefix: {
             title: {
@@ -238,5 +251,40 @@ export class EventService {
     const events = result.hits.map((hit) => hit._source)
 
     return events
+  }
+
+  async searchEvents(input: SearchEventsInput) {
+    const {
+      query,
+      skip,
+      limit,
+    } = input
+
+    const result = await this.openSearchService.search(
+      'events',
+      {
+        from: skip,
+        size: limit,
+        query: {
+          match: {
+            title: {
+              query,
+            },
+          },
+        },
+      },
+    )
+
+    const events = result.hits
+      .map((hit) => hit._source)
+      .map((event) => parseOpenSearchEventResponse(event))
+    const totalCount = result.total.value
+console.log(typeof events[0].createdAt)
+    const totalPagesCount = Math.ceil(totalCount / limit)
+
+    return {
+      items: events,
+      totalPagesCount,
+    }
   }
 }
