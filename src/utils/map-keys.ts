@@ -1,16 +1,17 @@
-const mapKeys = (obj, keys, callback) => {
-  if (typeof obj !== 'object' || obj === null) {
-    return obj
+const mapKeys = (obj, keys, fn) => {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        mapKeys(obj[key], keys, fn)
+      }
+      
+      else if (keys.includes(key)) {
+        obj[key] = fn(obj[key])
+      }
+    }
   }
-
-  if (keys.includes(Object.keys(obj)[0])) {
-    return {...obj, [Object.keys(obj)[0]]: callback(obj[Object.keys(obj)[0]])}
-  }
-
-  return Object.fromEntries (
-    Object.entries(obj)
-      .map(([key, value]) => [key, mapKeys(value, keys, callback)])
-  )
+  
+  return obj
 }
 
 export default mapKeys

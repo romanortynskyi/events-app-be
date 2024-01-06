@@ -226,7 +226,7 @@ export class EventService {
     }
   }
 
-  async autocompleteEvents(input: AutocompleteEventsInput): Promise<Partial<Event>[]> {
+  async autocompleteEvents(input: AutocompleteEventsInput) {
     const {
       query,
       skip,
@@ -248,9 +248,30 @@ export class EventService {
       },
     )
 
-    const events = result.hits.map((hit) => hit._source)
+    const events = result.hits
+      .map((hit) => hit._source)
+      .map((event) => parseOpenSearchEventResponse(event))
+      .map(async (event) => {
+        const place = await this.placeService.getPlaceById(event.placeId)
+        
+        return {
+          ...event,
+          place: {
+            ...place,
+            country: this.geolocationService.getCountry(place.address_components),
+            locality: this.geolocationService.getLocality(place.address_components),
+            geometry: place.geometry,
+          },
+        }
+      })
 
-    return events
+    const totalCount = result.total.value
+    const totalPagesCount = Math.ceil(totalCount / limit)
+
+    return {
+      items: events,
+      totalPagesCount,
+    }
   }
 
   async searchEvents(input: SearchEventsInput) {
@@ -278,8 +299,21 @@ export class EventService {
     const events = result.hits
       .map((hit) => hit._source)
       .map((event) => parseOpenSearchEventResponse(event))
+      .map(async (event) => {
+        const place = await this.placeService.getPlaceById(event.placeId)
+
+        return {
+          ...event,
+          place: {
+            ...place,
+            country: this.geolocationService.getCountry(place.address_components),
+            locality: this.geolocationService.getLocality(place.address_components),
+            geometry: place.geometry,
+          },
+        }
+      })
+
     const totalCount = result.total.value
-console.log(typeof events[0].createdAt)
     const totalPagesCount = Math.ceil(totalCount / limit)
 
     return {

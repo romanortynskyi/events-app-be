@@ -8,12 +8,12 @@ const parseOpenSearchEventResponse = (response): EventEntity => {
     'startDate',
     'endDate',
   ]
-  
-  const callback = (value) => new Date(value)
-  
-  const result = mapKeys(response, keys, callback)
 
-  return result
+  const fn = (value) => new Date(value)
+  
+  const result = mapKeys(response, keys, fn)
+
+  return result as EventEntity
 }
 
 export default parseOpenSearchEventResponse
