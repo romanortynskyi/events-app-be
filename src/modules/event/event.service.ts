@@ -248,30 +248,7 @@ export class EventService {
       },
     )
 
-    const events = result.hits
-      .map((hit) => hit._source)
-      .map((event) => parseOpenSearchEventResponse(event))
-      .map(async (event) => {
-        const place = await this.placeService.getPlaceById(event.placeId)
-        
-        return {
-          ...event,
-          place: {
-            ...place,
-            country: this.geolocationService.getCountry(place.address_components),
-            locality: this.geolocationService.getLocality(place.address_components),
-            geometry: place.geometry,
-          },
-        }
-      })
-
-    const totalCount = result.total.value
-    const totalPagesCount = Math.ceil(totalCount / limit)
-
-    return {
-      items: events,
-      totalPagesCount,
-    }
+    return this.mapOpenSearchEvents(result, limit)
   }
 
   async searchEvents(input: SearchEventsInput) {
@@ -296,29 +273,33 @@ export class EventService {
       },
     )
 
+    return this.mapOpenSearchEvents(result, limit)
+  }
+
+  async mapOpenSearchEvents(result, limit) {
     const events = result.hits
-      .map((hit) => hit._source)
-      .map((event) => parseOpenSearchEventResponse(event))
-      .map(async (event) => {
-        const place = await this.placeService.getPlaceById(event.placeId)
-
-        return {
-          ...event,
-          place: {
-            ...place,
-            country: this.geolocationService.getCountry(place.address_components),
-            locality: this.geolocationService.getLocality(place.address_components),
-            geometry: place.geometry,
-          },
-        }
-      })
-
-    const totalCount = result.total.value
-    const totalPagesCount = Math.ceil(totalCount / limit)
-
-    return {
-      items: events,
-      totalPagesCount,
-    }
+        .map((hit) => hit._source)
+        .map((event) => parseOpenSearchEventResponse(event))
+        .map(async (event) => {
+          const place = await this.placeService.getPlaceById(event.placeId)
+          
+          return {
+            ...event,
+            place: {
+              ...place,
+              country: this.geolocationService.getCountry(place.address_components),
+              locality: this.geolocationService.getLocality(place.address_components),
+              geometry: place.geometry,
+            },
+          }
+        })
+  
+      const totalCount = result.total.value
+      const totalPagesCount = Math.ceil(totalCount / limit)
+  
+      return {
+        items: events,
+        totalPagesCount,
+      }
   }
 }

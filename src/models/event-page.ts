@@ -1,4 +1,5 @@
 import { ObjectType } from '@nestjs/graphql'
+
 import Paginated from './paginated'
 import Event from './event'
 

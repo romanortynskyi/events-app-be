@@ -1,17 +1,18 @@
-const mapKeys = (obj, keys, fn) => {
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      if (typeof obj[key] === 'object' && obj[key] !== null) {
-        mapKeys(obj[key], keys, fn)
-      }
-      
-      else if (keys.includes(key)) {
-        obj[key] = fn(obj[key])
-      }
-    }
+const mapKeys = (obj: any, fn): any => {
+  if (obj === null || typeof obj !== 'object') {
+    return obj
   }
-  
-  return obj
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => mapKeys(item, fn))
+  }
+
+  return Object.keys(obj).reduce((acc, key) => {
+    const mappedKey = fn(key)
+    acc[mappedKey] = mapKeys(obj[key], fn)
+    
+    return acc
+  }, {})
 }
 
 export default mapKeys

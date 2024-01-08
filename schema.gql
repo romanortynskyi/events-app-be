@@ -109,6 +109,36 @@ type EventPage {
   totalPagesCount: Int!
 }
 
+type MatchedSubstring {
+  length: Float!
+  offset: Float!
+}
+
+type StructuredFormatting {
+  mainText: String!
+  mainTextMatchedSubstrings: [MatchedSubstring!]!
+  secondaryText: String!
+}
+
+type Term {
+  offset: Float!
+  value: String!
+}
+
+type AutocompletePlacesPrediction {
+  description: String!
+  matchedSubstrings: [MatchedSubstring!]!
+  placeId: String!
+  structuredFormatting: StructuredFormatting!
+  terms: [Term!]!
+  types: [String!]!
+}
+
+type AutocompletePlacesPredictionPage {
+  items: [AutocompletePlacesPrediction!]!
+  totalPagesCount: Int!
+}
+
 type Query {
   getMe: UserEntity!
   getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
@@ -116,6 +146,7 @@ type Query {
   getEventById(id: Float!, originId: String!): Event!
   autocompleteEvents(input: AutocompleteEventsInput!): EventPage!
   searchEvents(input: SearchEventsInput!): EventPage!
+  autocompletePlaces(input: AutocompletePlacesInput!): AutocompletePlacesPredictionPage!
 }
 
 input AutocompleteEventsInput {
@@ -128,6 +159,12 @@ input SearchEventsInput {
   query: String!
   skip: Float!
   limit: Float!
+}
+
+input AutocompletePlacesInput {
+  skip: Float!
+  limit: Float!
+  query: String!
 }
 
 type Mutation {

@@ -1,5 +1,5 @@
 import { EventEntity } from 'src/entities/event.entity'
-import mapKeys from './map-keys'
+import mapValues from './map-values'
 
 const parseOpenSearchEventResponse = (response): EventEntity => {
   const keys = [
@@ -11,7 +11,7 @@ const parseOpenSearchEventResponse = (response): EventEntity => {
 
   const fn = (value) => new Date(value)
   
-  const result = mapKeys(response, keys, fn)
+  const result = mapValues(response, keys, fn)
 
   return result as EventEntity
 }
