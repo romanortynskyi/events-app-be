@@ -39,7 +39,7 @@ export class PlaceService {
         },
       },
     )
-console.log(JSON.stringify(data.predictions[0], null, 2))
+
     const { predictions } = data
 
     const items = predictions
