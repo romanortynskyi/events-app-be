@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Args, Query } from '@nestjs/graphql'
+import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql'
 
 import EventInput from './inputs/event.input'
 import { EventService } from './event.service'
@@ -11,6 +11,7 @@ import EventPage from 'src/models/event-page'
 import Event from 'src/models/event'
 import AutocompleteEventsInput from './inputs/autocomplete-events.input'
 import SearchEventsInput from './inputs/search-events.input'
+import GetEventsBounds from './inputs/get-events-bounds.input'
 
 @Resolver(EventEntity)
 class EventResolver {
@@ -23,8 +24,27 @@ class EventResolver {
   }
 
   @Query(() => EventPage)
-  getEvents(@Args('skip') skip: number, @Args('limit') limit: number) {
-    return this.eventService.getEvents({ skip, limit })
+  getEvents(
+    @Args({
+      name: 'skip',
+      type: () => Int,
+      nullable: true,
+    }) skip?: number,
+    @Args({
+      name: 'limit',
+      type: () => Int,
+      nullable: true,
+    }) limit?: number,
+    @Args({
+      name: 'bounds',
+      nullable: true,
+    }) bounds?: GetEventsBounds,
+  ) {
+    return this.eventService.getEvents({
+      skip,
+      limit,
+      bounds,
+    })
   }
 
   @Query(() => Event)

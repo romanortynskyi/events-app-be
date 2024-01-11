@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
+import { Point } from 'geojson'
+import * as wkx from 'wkx'
 
 import EventInput from './inputs/event.input'
 import { UserEntity } from 'src/entities/user.entity'
@@ -21,13 +23,13 @@ import FileProvider from 'src/enums/file-provider.enum'
 import EventPage from 'src/models/event-page'
 import { PlaceService } from '../place/place.service'
 import { GeolocationService } from '../geolocation/geolocation.service'
-import Event from '../../models/event'
 import { DistanceMatrixService } from '../distance-matrix/distance-matrix.service'
 import { OpenSearchService } from '../open-search/open-search.service'
 import OpenSearchIndex from 'src/enums/open-search-index.enum'
 import AutocompleteEventsInput from './inputs/autocomplete-events.input'
 import SearchEventsInput from './inputs/search-events.input'
 import parseOpenSearchEventResponse from 'src/utils/parse-open-search-event-response'
+import { PointService } from '../point/point.service'
 
 @Injectable()
 export class EventService {
@@ -42,6 +44,7 @@ export class EventService {
     private readonly geolocationService: GeolocationService,
     private readonly distanceMatrixService: DistanceMatrixService,
     private readonly openSearchService: OpenSearchService,
+    private readonly pointService: PointService,
   ) {}
 
   parseEvent(event) {
@@ -85,17 +88,21 @@ export class EventService {
       placeId,
     } = input
 
-    const imageUploadResponse = await this.uploadService.uploadFile(
-      image,
-      Folder.EventImages,
-      () => {},
-    )
-
     const queryRunner = this.dataSource.createQueryRunner()
 
     await queryRunner.startTransaction()
 
     try {
+      const place = await this.placeService.getPlaceById(placeId)
+
+      const { lng, lat } = place.geometry.location
+
+      const imageUploadResponse = await this.uploadService.uploadFile(
+        image,
+        Folder.EventImages,
+        () => {},
+      )
+
       const imageEntity = queryRunner
         .manager
         .getRepository(FileEntity)
@@ -107,6 +114,8 @@ export class EventService {
 
       await queryRunner.manager.save(imageEntity)
 
+      const geolocation: Point = this.pointService.createPoint(lng, lat)
+
       const eventEntity: EventEntity = queryRunner.manager.getRepository(EventEntity).create({
         title,
         description,
@@ -114,6 +123,7 @@ export class EventService {
         endDate: new Date(endDateStr),
         ticketPrice,
         placeId,
+        geolocation,
         image: imageEntity,
         author: user,
       })
@@ -124,7 +134,13 @@ export class EventService {
 
       await this.openSearchService.index(OpenSearchIndex.Events, eventEntity)
 
-      return eventEntity
+      return {
+        ...eventEntity,
+        geolocation: {
+          lng,
+          lat,
+        },
+      }
     }
 
     catch (error) {
@@ -135,13 +151,65 @@ export class EventService {
     }
   }
 
-  async getEvents({ skip, limit }): Promise<EventPage> {
+  async getEvents({
+    skip,
+    limit,
+    bounds,
+  }): Promise<EventPage> {
+    let whereSql: string = ''
+    let paginationSql: string = ''
+    let params: any[] = []
+
+    if (bounds) {
+      const {
+        xMin,
+        yMin,
+        xMax,
+        yMax,
+      } = bounds
+      
+      if (skip && limit) {
+        whereSql = `WHERE ST_Within(geolocation::geometry, ST_MakeEnvelope($3, $4, $5, $6, 4326))`
+        paginationSql = `
+          OFFSET $1
+          LIMIT $2
+        `
+        params = [
+          skip,
+          limit,
+          xMin,
+          yMin,
+          xMax,
+          yMax,
+        ]
+      }
+
+      else {
+        whereSql = `WHERE ST_Within(geolocation::geometry, ST_MakeEnvelope($1, $2, $3, $4, 4326))`
+        params = [
+          xMin,
+          yMin,
+          xMax,
+          yMax,
+        ]
+      }
+    }
+
+    else {
+      paginationSql = `
+        OFFSET $1
+        LIMIT $2
+      `
+      params = [skip, limit]
+    }
+
     const eventsFromDb = await this.eventRepository
       .query(`
           SELECT event.id AS id, 
             "event"."createdAt" AS "createdAt", 
             "event"."updatedAt" AS "updatedAt", 
             "event"."placeId" AS "placeId", 
+            "event"."geolocation" AS "geolocation",
             "event"."title" AS "title", 
             "event"."description" AS "description", 
             "event"."startDate" AS "startDate", 
@@ -155,24 +223,30 @@ export class EventService {
             "image"."src" AS "image_src", 
             "image"."filename" AS "image_filename", 
             "image"."provider" AS "image_provider" 
-            FROM "event" "event" 
-            INNER JOIN "file" "image" ON "image"."id"="event"."imageId" 
-          ORDER BY 
-          "startDate" ASC, 
-          "id" ASC 
-          OFFSET $1
-          LIMIT $2 
+          FROM "event" "event" 
+          INNER JOIN "file" "image" ON "image"."id"="event"."imageId"
+          ${whereSql}
+          ORDER BY
+            "startDate" ASC,
+            "id" ASC
+          ${paginationSql}
         `,
-        [skip, limit],
+        params,
       )
-      
+
     const events = await Promise.all(eventsFromDb.map(async (eventFromDb) => {
       const parsedEvent = this.parseEvent(eventFromDb)
-      
       const place = await this.placeService.getPlaceById(parsedEvent.placeId)
+      
+      const geolocation = wkx.Geometry.parse(Buffer.from(eventFromDb.geolocation, 'hex'))
+      const [lng, lat] = geolocation.toGeoJSON()['coordinates']
 
       const event = {
         ...parsedEvent,
+        geolocation: {
+          lng,
+          lat,
+        },
         place: {
           ...place,
           country: this.geolocationService.getCountry(place.address_components),
@@ -184,7 +258,11 @@ export class EventService {
     }))
     
     const totalEventsCount = await this.eventRepository.count()
-    const totalPagesCount = Math.ceil(totalEventsCount / limit)
+    let totalPagesCount = 1
+
+    if (limit) {
+      totalPagesCount = Math.ceil(totalEventsCount / limit)
+    }
 
     return {
       items: events,
@@ -192,7 +270,7 @@ export class EventService {
     }
   }
 
-  async getEventById(id: number, originId: string): Promise<Partial<Event>> {
+  async getEventById(id: number, originId: string) {
     const event = await this.eventRepository
       .findOne({
         where: {
@@ -215,8 +293,14 @@ export class EventService {
       destination: event.placeId,
     })
 
+    const [lng, lat] = event.geolocation.coordinates
+
     return {
       ...event,
+      geolocation: {
+        lng,
+        lat,
+      },
       place: {
         ...place,
         country: this.geolocationService.getCountry(place.address_components),
@@ -234,7 +318,7 @@ export class EventService {
     } = input
 
     const result = await this.openSearchService.search(
-      'events',
+      OpenSearchIndex.Events,
       {
         from: skip,
         size: limit,
@@ -259,7 +343,7 @@ export class EventService {
     } = input
 
     const result = await this.openSearchService.search(
-      'events',
+      OpenSearchIndex.Events,
       {
         from: skip,
         size: limit,
@@ -278,28 +362,28 @@ export class EventService {
 
   async mapOpenSearchEvents(result, limit) {
     const events = result.hits
-        .map((hit) => hit._source)
-        .map((event) => parseOpenSearchEventResponse(event))
-        .map(async (event) => {
-          const place = await this.placeService.getPlaceById(event.placeId)
-          
-          return {
-            ...event,
-            place: {
-              ...place,
-              country: this.geolocationService.getCountry(place.address_components),
-              locality: this.geolocationService.getLocality(place.address_components),
-              geometry: place.geometry,
-            },
-          }
-        })
-  
-      const totalCount = result.total.value
-      const totalPagesCount = Math.ceil(totalCount / limit)
-  
-      return {
-        items: events,
-        totalPagesCount,
-      }
+      .map((hit) => hit._source)
+      .map((event) => parseOpenSearchEventResponse(event))
+      .map(async (event) => {
+        const place = await this.placeService.getPlaceById(event.placeId)
+
+        return {
+          ...event,
+          place: {
+            ...place,
+            country: this.geolocationService.getCountry(place.address_components),
+            locality: this.geolocationService.getLocality(place.address_components),
+            geometry: place.geometry,
+          },
+        }
+      })
+
+    const totalCount = result.total.value
+    const totalPagesCount = Math.ceil(totalCount / limit)
+
+    return {
+      items: events,
+      totalPagesCount,
+    }
   }
 }

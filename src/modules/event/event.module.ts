@@ -9,6 +9,7 @@ import { PlaceModule } from '../place/place.module'
 import { GeolocationModule } from '../geolocation/geolocation.module'
 import { DistanceMatrixModule } from '../distance-matrix/distance-matrix.module'
 import { OpenSearchModule } from '../open-search/open-search.module'
+import { PointModule } from '../point/point.module'
 
 @Module({
   providers: [EventService],
@@ -23,6 +24,7 @@ import { OpenSearchModule } from '../open-search/open-search.module'
     GeolocationModule,
     DistanceMatrixModule,
     OpenSearchModule,
+    PointModule,
   ],
   exports: [EventService],
 })
