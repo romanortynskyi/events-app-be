@@ -82,6 +82,7 @@ type Place {
   createdAt: DateTime!
   updatedAt: DateTime!
   originalId: String!
+  googleMapsUri: String!
   location: Location!
 }
 

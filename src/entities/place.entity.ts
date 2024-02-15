@@ -25,4 +25,8 @@ export class PlaceEntity extends BaseEntity {
     nullable: true,
   })
   location: Point
+
+  @Field()
+  @Column({ unique: true })
+  googleMapsUri: string
 }

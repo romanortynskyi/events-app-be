@@ -12,8 +12,8 @@ class Place extends Model {
   // @Field()
   // name: string
 
-  // @Field()
-  // url: string
+  @Field()
+  googleMapsUri: string
 
   @Field()
   location: Location

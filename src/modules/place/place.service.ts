@@ -37,9 +37,10 @@ export class PlaceService {
         longitude,
         latitude,
       )
-
+      
       placeEntity.location = location
       placeEntity.originalId = place.originalId
+      placeEntity.googleMapsUri = place.googleMapsUri
 
       await queryRunner.manager.getRepository(PlaceEntity).save(placeEntity)
 
