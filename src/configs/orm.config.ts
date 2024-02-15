@@ -1,7 +1,9 @@
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm'
+
 import { EventEntity } from 'src/entities/event.entity'
 import { FileEntity } from 'src/entities/file.entity'
+import { PlaceEntity } from 'src/entities/place.entity'
 import { UserEntity } from 'src/entities/user.entity'
 
 export const ormOptions: TypeOrmModuleAsyncOptions = {
@@ -18,6 +20,7 @@ export const ormOptions: TypeOrmModuleAsyncOptions = {
       UserEntity,
       FileEntity,
       EventEntity,
+      PlaceEntity
     ],
     logging: true,
   }),

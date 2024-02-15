@@ -22,7 +22,6 @@ import { FileEntity } from 'src/entities/file.entity'
 import FileProvider from 'src/enums/file-provider.enum'
 import EventPage from 'src/models/event-page'
 import { PlaceService } from '../place/place.service'
-import { GeolocationService } from '../geolocation/geolocation.service'
 import { DistanceMatrixService } from '../distance-matrix/distance-matrix.service'
 import { OpenSearchService } from '../open-search/open-search.service'
 import OpenSearchIndex from 'src/enums/open-search-index.enum'
@@ -30,6 +29,7 @@ import AutocompleteEventsInput from './inputs/autocomplete-events.input'
 import SearchEventsInput from './inputs/search-events.input'
 import parseOpenSearchEventResponse from 'src/utils/parse-open-search-event-response'
 import { PointService } from '../point/point.service'
+import Event from 'src/models/event'
 
 @Injectable()
 export class EventService {
@@ -41,7 +41,6 @@ export class EventService {
     private readonly uploadService: UploadService,
     private readonly dataSource: DataSource,
     private readonly placeService: PlaceService,
-    private readonly geolocationService: GeolocationService,
     private readonly distanceMatrixService: DistanceMatrixService,
     private readonly openSearchService: OpenSearchService,
     private readonly pointService: PointService,
@@ -71,7 +70,7 @@ export class EventService {
     }
   }
 
-  async addEvent(input: EventInput, userId: number) {
+  async addEvent(input: EventInput, userId: number): Promise<Event> {
     const user = await this.userRepository.findOneBy({ id: userId })
 
     if (!user) {
@@ -93,9 +92,13 @@ export class EventService {
     await queryRunner.startTransaction()
 
     try {
-      const place = await this.placeService.getPlaceById(placeId)
+      let place = await this.placeService.getPlaceById(placeId)
 
-      const { lng, lat } = place.geometry.location
+      if (!place) {
+        place = await this.placeService.addPlace(placeId, queryRunner)
+      }
+
+      const [latitude, longitude] = place.location.coordinates
 
       const imageUploadResponse = await this.uploadService.uploadFile(
         image,
@@ -103,8 +106,7 @@ export class EventService {
         () => {},
       )
 
-      const imageEntity = queryRunner
-        .manager
+      const imageEntity: FileEntity = queryRunner.manager
         .getRepository(FileEntity)
         .create({
           src: imageUploadResponse.Location,
@@ -114,19 +116,24 @@ export class EventService {
 
       await queryRunner.manager.save(imageEntity)
 
-      const geolocation: Point = this.pointService.createPoint(lng, lat)
+      const geolocation: Point = this.pointService.createPoint(
+        longitude,
+        latitude,
+      )
 
-      const eventEntity: EventEntity = queryRunner.manager.getRepository(EventEntity).create({
-        title,
-        description,
-        startDate: new Date(startDateStr),
-        endDate: new Date(endDateStr),
-        ticketPrice,
-        placeId,
-        geolocation,
-        image: imageEntity,
-        author: user,
-      })
+      const eventEntity: EventEntity = queryRunner.manager
+        .getRepository(EventEntity)
+        .create({
+          title,
+          description,
+          startDate: new Date(startDateStr),
+          endDate: new Date(endDateStr),
+          ticketPrice,
+          placeId,
+          geolocation,
+          image: imageEntity,
+          author: user,
+        })
 
       await queryRunner.manager.save(eventEntity)
 
@@ -137,8 +144,15 @@ export class EventService {
       return {
         ...eventEntity,
         geolocation: {
-          lng,
-          lat,
+          longitude,
+          latitude,
+        },
+        place: {
+          ...place,
+          location: {
+            latitude,
+            longitude,
+          },
         },
       }
     }
@@ -203,60 +217,38 @@ export class EventService {
       params = [skip, limit]
     }
 
-    const eventsFromDb = await this.eventRepository
-      .query(`
-          SELECT event.id AS id, 
-            "event"."createdAt" AS "createdAt", 
-            "event"."updatedAt" AS "updatedAt", 
-            "event"."placeId" AS "placeId", 
-            "event"."geolocation" AS "geolocation",
-            "event"."title" AS "title", 
-            "event"."description" AS "description", 
-            "event"."startDate" AS "startDate", 
-            "event"."endDate" AS "endDate", 
-            "event"."ticketPrice" AS "ticketPrice", 
-            "event"."authorId" AS "authorId", 
-            "event"."imageId" AS "imageId", 
-            "image"."id" AS "image_id", 
-            "image"."createdAt" AS "image_createdAt", 
-            "image"."updatedAt" AS "image_updatedAt", 
-            "image"."src" AS "image_src", 
-            "image"."filename" AS "image_filename", 
-            "image"."provider" AS "image_provider" 
-          FROM "event" "event" 
-          INNER JOIN "file" "image" ON "image"."id"="event"."imageId"
-          ${whereSql}
-          ORDER BY
-            "startDate" ASC,
-            "id" ASC
-          ${paginationSql}
-        `,
-        params,
-      )
+    const events = await this.eventRepository.query(
+      `
+        SELECT event.id AS id, 
+          "event"."createdAt" AS "createdAt", 
+          "event"."updatedAt" AS "updatedAt", 
+          "event"."placeId" AS "placeId", 
+          "event"."geolocation" AS "geolocation",
+          "event"."title" AS "title", 
+          "event"."description" AS "description", 
+          "event"."startDate" AS "startDate", 
+          "event"."endDate" AS "endDate", 
+          "event"."ticketPrice" AS "ticketPrice", 
+          "event"."authorId" AS "authorId", 
+          "event"."imageId" AS "imageId", 
+          "image"."id" AS "image_id", 
+          "image"."createdAt" AS "image_createdAt", 
+          "image"."updatedAt" AS "image_updatedAt", 
+          "image"."src" AS "image_src", 
+          "image"."filename" AS "image_filename", 
+          "image"."provider" AS "image_provider" 
+        FROM "event" "event" 
+        INNER JOIN "file" "image" ON "image"."id" = "event"."imageId"
+        INNER JOIN "place" "place" ON "place"."originalId" = "event"."placeId" 
+        ${whereSql}
+        ORDER BY
+          "startDate" ASC,
+          "id" ASC
+        ${paginationSql}
+      `,
+      params,
+    )
 
-    const events = await Promise.all(eventsFromDb.map(async (eventFromDb) => {
-      const parsedEvent = this.parseEvent(eventFromDb)
-      const place = await this.placeService.getPlaceById(parsedEvent.placeId)
-      
-      const geolocation = wkx.Geometry.parse(Buffer.from(eventFromDb.geolocation, 'hex'))
-      const [lng, lat] = geolocation.toGeoJSON()['coordinates']
-
-      const event = {
-        ...parsedEvent,
-        geolocation: {
-          lng,
-          lat,
-        },
-        place: {
-          ...place,
-          country: this.geolocationService.getCountry(place.address_components),
-          locality: this.geolocationService.getLocality(place.address_components),
-        },
-      }
-
-      return event
-    }))
-    
     const totalEventsCount = await this.eventRepository.count()
     let totalPagesCount = 1
 
@@ -271,16 +263,15 @@ export class EventService {
   }
 
   async getEventById(id: number, originId: string) {
-    const event = await this.eventRepository
-      .findOne({
-        where: {
-          id,
-        },
-        relations: {
-          image: true,
-          author: true,
-        },
-      })
+    const event = await this.eventRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        image: true,
+        author: true,
+      },
+    })
 
     if (!event) {
       throw new NotFoundException(EVENT_NOT_FOUND)
@@ -303,8 +294,8 @@ export class EventService {
       },
       place: {
         ...place,
-        country: this.geolocationService.getCountry(place.address_components),
-        locality: this.geolocationService.getLocality(place.address_components),
+        // country: this.geolocationService.getCountry(place.address_components),
+        // locality: this.geolocationService.getLocality(place.address_components),
       },
       distance,
     }
@@ -371,9 +362,9 @@ export class EventService {
           ...event,
           place: {
             ...place,
-            country: this.geolocationService.getCountry(place.address_components),
-            locality: this.geolocationService.getLocality(place.address_components),
-            geometry: place.geometry,
+            // country: this.geolocationService.getCountry(place.address_components),
+            // locality: this.geolocationService.getLocality(place.address_components),
+            // geometry: place.geometry,
           },
         }
       })

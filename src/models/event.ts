@@ -1,12 +1,42 @@
 import { Field, ObjectType } from '@nestjs/graphql'
-import { EventEntity } from 'src/entities/event.entity'
+
 import Place from './place'
+import Location from './location'
+import User from './user'
+import File from './file'
+import Model from './model'
 
 @ObjectType()
-export default class Event extends EventEntity {
-  @Field()
-  place: Place
+class Event extends Model {
+  @Field({ nullable: true })
+  geolocation: Location
+
+  @Field({ nullable: true })
+  title: string
+
+  @Field({ nullable: true })
+  description: string
 
   @Field()
-  distance: number
+  startDate: Date
+
+  @Field()
+  endDate: Date
+
+  @Field()
+  ticketPrice: number
+
+  @Field(() => User)
+  author: User
+
+  @Field(() => File)
+  image: File
+
+  @Field(() => Place)
+  place: Place
+
+  @Field({ nullable: true })
+  distance?: number
 }
+
+export default Event

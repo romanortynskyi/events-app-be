@@ -2,7 +2,6 @@ import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql'
 
 import EventInput from './inputs/event.input'
 import { EventService } from './event.service'
-import { EventEntity } from 'src/entities/event.entity'
 import { CurrentUser } from 'src/decorators/current-user'
 import { UserEntity } from 'src/entities/user.entity'
 import { UseGuards } from '@nestjs/common'
@@ -13,11 +12,11 @@ import AutocompleteEventsInput from './inputs/autocomplete-events.input'
 import SearchEventsInput from './inputs/search-events.input'
 import GetEventsBounds from './inputs/get-events-bounds.input'
 
-@Resolver(EventEntity)
+@Resolver(Event)
 class EventResolver {
   constructor(private eventService: EventService) {}
   
-  @Mutation(() => EventEntity)
+  @Mutation(() => Event)
   @UseGuards(JwtGuard)
   addEvent(@CurrentUser() user: UserEntity, @Args('input') input: EventInput) {
     return this.eventService.addEvent(input, user.id)

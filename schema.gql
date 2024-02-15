@@ -30,8 +30,8 @@ type UserEntity {
 }
 
 type Location {
-  lat: Float!
-  lng: Float!
+  latitude: Float!
+  longitude: Float!
 }
 
 type EventEntity {
@@ -77,33 +77,48 @@ type GeolocationEntity {
   streetNumber: String
 }
 
-type Geometry {
+type Place {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  originalId: String!
   location: Location!
 }
 
-type Place {
-  name: String!
-  url: String!
-  geometry: Geometry!
-  country: String!
-  locality: String!
+type File {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  src: String
+  filename: String
+  provider: String!
+}
+
+type User {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  firstName: String!
+  lastName: String!
+  email: String!
+  recoveryCode: String
+  image: File!
 }
 
 type Event {
   id: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
-  placeId: String
   geolocation: Location
   title: String
   description: String
   startDate: DateTime!
   endDate: DateTime!
   ticketPrice: Float!
-  author: UserEntity!
-  image: FileEntity!
+  author: User!
+  image: File!
   place: Place!
-  distance: Float!
+  distance: Float
 }
 
 type EventPage {
@@ -182,7 +197,7 @@ type Mutation {
   loginWithGoogle(idToken: String!): UserWithToken!
   loginWithFacebook(accessToken: String!): UserWithToken!
   sendResetPasswordEmail(input: ForgotPasswordInput!): Boolean!
-  addEvent(input: EventInput!): EventEntity!
+  addEvent(input: EventInput!): Event!
 }
 
 input SignUpInput {

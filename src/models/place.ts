@@ -1,20 +1,28 @@
 import { Field, ObjectType } from '@nestjs/graphql'
-import Geometry from './geometry'
+
+import Location from './location'
+import Model from './model'
 
 @ObjectType()
-export default class Place {
+class Place extends Model {
+  
   @Field()
-  name: string
+  originalId: string
+
+  // @Field()
+  // name: string
+
+  // @Field()
+  // url: string
 
   @Field()
-  url: string
+  location: Location
 
-  @Field()
-  geometry: Geometry
+  // @Field()
+  // country: string
 
-  @Field()
-  country: string
-
-  @Field()
-  locality: string
+  // @Field()
+  // locality: string
 }
+
+export default Place

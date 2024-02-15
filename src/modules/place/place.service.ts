@@ -1,56 +1,61 @@
 import { Injectable } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
-import Axios from 'axios'
+import { InjectRepository } from '@nestjs/typeorm'
+import { QueryRunner, Repository } from 'typeorm'
+
 import AutocompletePlacesInput from './inputs/autocomplete-places.input'
-import parsePythonCaseObject from 'src/utils/parse-python-case-object'
+import { PlaceEntity } from 'src/entities/place.entity'
+import { GooglePlacesApiService } from '../google-places-api/google-places-api.service'
+import Place from 'src/models/place'
+import { Point } from 'geojson'
+import { PointService } from '../point/point.service'
 
 @Injectable()
 export class PlaceService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @InjectRepository(PlaceEntity)
+    private readonly placeRepository: Repository<PlaceEntity>,
+    private readonly googlePlacesApiService: GooglePlacesApiService,
+    private readonly pointService: PointService,
+  ) {}
+
+  async addPlace(id: string, queryRunner: QueryRunner): Promise<PlaceEntity> {
+    let place: PlaceEntity | Place = await this.placeRepository.findOneBy({
+      originalId: id,
+    })
+
+    if (!place) {
+      place = await this.googlePlacesApiService.getPlaceById({
+        id,
+        fields: 'id,displayName,location,addressComponents,googleMapsUri,photos',
+      })
+
+      const { longitude, latitude } = place.location
+
+      const placeEntity = new PlaceEntity()
+
+      const location: Point = this.pointService.createPoint(
+        longitude,
+        latitude,
+      )
+
+      placeEntity.location = location
+      placeEntity.originalId = place.originalId
+
+      await queryRunner.manager.getRepository(PlaceEntity).save(placeEntity)
+
+      return placeEntity
+    }
+
+    return new PlaceEntity()
+  }
 
   async getPlaceById(id: string) {
-    const { data } = await Axios.get(
-      'https://maps.googleapis.com/maps/api/place/details/json',
-      {
-        params: {
-          place_id: id,
-          key: this.configService.get('GOOGLE_MAPS_API_KEY'),
-        },
-      },
-    )
+    const place = await this.placeRepository.findOneBy({ originalId: id })
 
-    return data.result
+    return place
   }
 
   async autocompletePlaces(input: AutocompletePlacesInput, language: string) {
-    const {
-      skip,
-      limit,
-      query,
-    } = input
-
-    const { data } = await Axios.get(
-      'https://maps.googleapis.com/maps/api/place/autocomplete/json',
-      {
-        params: {
-          input: query,
-          key: this.configService.get('GOOGLE_MAPS_API_KEY'),
-          language,
-        },
-      },
-    )
-
-    const { predictions } = data
-
-    const items = predictions
-      .slice(skip, limit)
-      .map((prediction) => parsePythonCaseObject(prediction))
-console.log(JSON.stringify(items, null, 2))
-    const totalPagesCount = Math.ceil(predictions.length / limit)
     
-    return {
-      items,
-      totalPagesCount,
-    }
   }
 }
