@@ -45,7 +45,7 @@ export class PlaceService {
     const items = predictions
       .slice(skip, limit)
       .map((prediction) => parsePythonCaseObject(prediction))
-
+console.log(JSON.stringify(items, null, 2))
     const totalPagesCount = Math.ceil(predictions.length / limit)
     
     return {

@@ -9,6 +9,7 @@ import AddUserEntity1693680054416 from './migrations/1693680054416-add-user-enti
 import AddFileEntity1693721031439 from './migrations/1693721031439-add-file-entity'
 import AddUserImage1694070673927 from './migrations/1694070673927-add-user-image'
 import AddEventEntity1694960352936 from './migrations/1694960352936-add-event-entity'
+import AddEventGeolocation1704812235974 from './migrations/1704812235974-add-event-geolocation'
 
 config({
   path: '.env.local',
@@ -33,5 +34,6 @@ export default new DataSource({
     AddFileEntity1693721031439,
     AddUserImage1694070673927,
     AddEventEntity1694960352936,
+    AddEventGeolocation1704812235974,
   ],
 })

@@ -29,11 +29,17 @@ type UserEntity {
   events: EventEntity!
 }
 
+type Location {
+  lat: Float!
+  lng: Float!
+}
+
 type EventEntity {
   id: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
   placeId: String
+  geolocation: Location
   title: String
   description: String
   startDate: DateTime!
@@ -71,11 +77,6 @@ type GeolocationEntity {
   streetNumber: String
 }
 
-type Location {
-  lat: Float!
-  lng: Float!
-}
-
 type Geometry {
   location: Location!
 }
@@ -93,6 +94,7 @@ type Event {
   createdAt: DateTime!
   updatedAt: DateTime!
   placeId: String
+  geolocation: Location
   title: String
   description: String
   startDate: DateTime!
@@ -117,7 +119,7 @@ type MatchedSubstring {
 type StructuredFormatting {
   mainText: String!
   mainTextMatchedSubstrings: [MatchedSubstring!]!
-  secondaryText: String!
+  secondaryText: String
 }
 
 type Term {
@@ -142,11 +144,18 @@ type AutocompletePlacesPredictionPage {
 type Query {
   getMe: UserEntity!
   getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
-  getEvents(skip: Float!, limit: Float!): EventPage!
+  getEvents(skip: Int, limit: Int, bounds: GetEventsBounds): EventPage!
   getEventById(id: Float!, originId: String!): Event!
   autocompleteEvents(input: AutocompleteEventsInput!): EventPage!
   searchEvents(input: SearchEventsInput!): EventPage!
   autocompletePlaces(input: AutocompletePlacesInput!): AutocompletePlacesPredictionPage!
+}
+
+input GetEventsBounds {
+  xMin: Float!
+  yMin: Float!
+  xMax: Float!
+  yMax: Float!
 }
 
 input AutocompleteEventsInput {

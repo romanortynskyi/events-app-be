@@ -9,8 +9,8 @@ class StructuredFormatting {
   @Field(() => [MatchedSubstring])
   mainTextMatchedSubstrings: MatchedSubstring[]
 
-  @Field()
-  secondaryText: string
+  @Field({ nullable: true })
+  secondaryText?: string
 }
 
 export default StructuredFormatting
