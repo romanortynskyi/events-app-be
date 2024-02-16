@@ -9,20 +9,20 @@ export class GeolocationService {
   constructor(private readonly configService: ConfigService) {}
 
   getCountry(addressComponents): string {
-    return addressComponents.filter((item) => item.types.includes('country'))[0].long_name
+    return addressComponents.filter((item) => item.types.includes('country'))[0].longText
   }
 
   getLocality(addressComponents): string {
-    return addressComponents.filter((item) => item.types.includes('locality'))[0].long_name
+    return addressComponents.filter((item) => item.types.includes('locality'))[0].longText
   }
 
   getRoute(addressComponents): string {
-    return addressComponents.filter((item) => item.types.includes('route'))[0].long_name
+    return addressComponents.filter((item) => item.types.includes('route'))[0].longText
   }
 
   getStreetNumber(addressComponents): string {
     const partsWithStreetNumber = addressComponents.filter((item) => item.types.includes('street_number'))
-    return partsWithStreetNumber.length ? partsWithStreetNumber[0].long_name : null
+    return partsWithStreetNumber.length ? partsWithStreetNumber[0].longText : null
   }
 
   async getGeolocationByCoords({ latitude, longitude, language }): Promise<Partial<GeolocationEntity>> {

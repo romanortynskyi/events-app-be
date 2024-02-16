@@ -5,7 +5,6 @@ import Model from './model'
 
 @ObjectType()
 class Place extends Model {
-  
   @Field()
   originalId: string
 

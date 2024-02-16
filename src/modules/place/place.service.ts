@@ -10,6 +10,8 @@ import { Point } from 'geojson'
 import { PointService } from '../point/point.service'
 import PlaceTranslationEntity from 'src/entities/place-translation.entity'
 import { GeolocationService } from '../geolocation/geolocation.service'
+import GooglePlace from 'src/models/google-place'
+import supportedLanguages from 'src/consts/supported-languages'
 
 @Injectable()
 export class PlaceService {
@@ -22,51 +24,55 @@ export class PlaceService {
   ) {}
 
   async addPlace(id: string, queryRunner: QueryRunner): Promise<Place> {
-    let place: PlaceEntity | Place = await this.placeRepository.findOneBy({
-      originalId: id,
-    })
+    let place: Place | GooglePlace = await this.getPlaceById(id)
 
     if (!place) {
-      place = await this.googlePlacesApiService.getPlaceById({
-        id,
-        fields: 'id,displayName,location,addressComponents,googleMapsUri,photos',
-      })
+      const translations = []
+
+      for (const language of supportedLanguages) {
+        place = await this.googlePlacesApiService.getPlaceById({
+          id,
+          fields: 'id,displayName,location,addressComponents,googleMapsUri,photos',
+          language,
+        })
+
+        const { addressComponents, displayName } = place
+
+        const country = this.geolocationService.getCountry(addressComponents)
+        const locality = this.geolocationService.getLocality(addressComponents)
+        const route = this.geolocationService.getRoute(addressComponents)
+        const streetNumber = this.geolocationService.getStreetNumber(addressComponents)
+
+        const placeTranslationEntity = new PlaceTranslationEntity()
+        placeTranslationEntity.name = displayName.text
+        placeTranslationEntity.language = language
+        placeTranslationEntity.country = country
+        placeTranslationEntity.locality = locality
+        placeTranslationEntity.route = route
+        placeTranslationEntity.streetNumber = streetNumber
+  
+        await queryRunner.manager
+          .getRepository(PlaceTranslationEntity)
+          .save(placeTranslationEntity)
+  
+        translations.push(placeTranslationEntity)
+      }
 
       const { longitude, latitude } = place.location
-
-      const placeEntity = new PlaceEntity()
 
       const location: Point = this.pointService.createPoint(
         longitude,
         latitude,
       )
 
-      const {
-        originalId,
-        googleMapsUri,
-        addressComponents,
-      } = place
+      const { id: originalId, googleMapsUri } = place
+
+      const placeEntity = new PlaceEntity()
 
       placeEntity.location = location
-      placeEntity.originalId = originalId
+      placeEntity.originalId = originalId as string
       placeEntity.googleMapsUri = googleMapsUri
-
-      const country = this.geolocationService.getCountry(addressComponents)
-      const locality = this.geolocationService.getLocality(addressComponents)
-      const route = this.geolocationService.getRoute(addressComponents)
-      const streetNumber = this.geolocationService.getStreetNumber(addressComponents)
-
-      const placeTranslationEntity = new PlaceTranslationEntity()
-      placeTranslationEntity.country = country
-      placeTranslationEntity.locality = locality
-      placeTranslationEntity.route = route
-      placeTranslationEntity.streetNumber = streetNumber
-
-      await queryRunner.manager
-        .getRepository(PlaceTranslationEntity)
-        .save(placeTranslationEntity)
-
-      placeEntity.translations = [placeTranslationEntity]
+      placeEntity.translations = translations
 
       await queryRunner.manager.getRepository(PlaceEntity).save(placeEntity)
 
@@ -79,28 +85,22 @@ export class PlaceService {
       }
     }
 
-    const [longitude, latitude] = place.location.coordinates
-
-    return {
-      ...place,
-      location: {
-        longitude,
-        latitude,
-      },
-    }
+    return place
   }
 
-  async getPlaceById(id: string): Promise<Place> {
+  async getPlaceById(id: string): Promise<Place | null> {
     const place = await this.placeRepository.findOneBy({ originalId: id })
+    
+    if (place) {
+      const [longitude, latitude] = place.location.coordinates
 
-    const [longitude, latitude] = place.location.coordinates
-
-    return {
-      ...place,
-      location: {
-        longitude,
-        latitude,
-      },
+      return {
+        ...place,
+        location: {
+          longitude,
+          latitude,
+        },
+      }
     }
   }
 
