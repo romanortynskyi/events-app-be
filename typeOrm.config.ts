@@ -6,6 +6,7 @@ import { UserEntity } from './src/entities/user.entity'
 import { FileEntity } from './src/entities/file.entity'
 import { EventEntity } from './src/entities/event.entity'
 import { PlaceEntity } from './src/entities/place.entity'
+import PlaceTranslationEntity from './src/entities/place-translation.entity'
 import AddUserEntity1693680054416 from './migrations/1693680054416-add-user-entity'
 import AddFileEntity1693721031439 from './migrations/1693721031439-add-file-entity'
 import AddUserImage1694070673927 from './migrations/1694070673927-add-user-image'
@@ -13,6 +14,7 @@ import AddEventEntity1694960352936 from './migrations/1694960352936-add-event-en
 import AddEventGeolocation1704812235974 from './migrations/1704812235974-add-event-geolocation'
 import AddPlaceEntity1708032193434 from './migrations/1708028281000-add-place-entity'
 import AddPlaceLocation1708028281541 from './migrations/1708028281541-add-place-location'
+import AddPlaceTranslation1708039137615 from './migrations/1708039137615-add-place-translation'
 
 config({
   path: '.env.local',
@@ -32,6 +34,7 @@ export default new DataSource({
     FileEntity,
     EventEntity,
     PlaceEntity,
+    PlaceTranslationEntity,
   ],
   migrations: [
     AddUserEntity1693680054416,
@@ -40,6 +43,7 @@ export default new DataSource({
     AddEventEntity1694960352936,
     AddEventGeolocation1704812235974,
     AddPlaceEntity1708032193434,
-    AddPlaceLocation1708028281541
+    AddPlaceLocation1708028281541,
+    AddPlaceTranslation1708039137615,
   ],
 })

@@ -11,7 +11,7 @@ export class GooglePlacesApiService {
 
   async getPlaceById(params: GetPlaceByIdParams): Promise<Place> {
     const { id, fields } = params
-    
+
     const { data } = await Axios.get(
       `https://places.googleapis.com/v1/places/${id}`,
       {

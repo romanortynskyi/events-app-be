@@ -3,11 +3,13 @@ import {
   Column,
   Entity,
   Index,
+  OneToMany,
 } from 'typeorm'
 import { Point } from 'geojson'
 
 import { BaseEntity } from './base.entity'
 import Location from '../models/location'
+import PlaceTranslationEntity from './place-translation.entity'
 
 @ObjectType()
 @Entity('place')
@@ -29,4 +31,10 @@ export class PlaceEntity extends BaseEntity {
   @Field()
   @Column({ unique: true })
   googleMapsUri: string
+
+  @OneToMany(
+    () => PlaceTranslationEntity,
+    (placeTranslation) => placeTranslation.place,
+  )
+  translations: PlaceTranslationEntity[]
 }

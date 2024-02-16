@@ -5,6 +5,7 @@ import { PlaceService } from './place.service'
 import { GooglePlacesApiModule } from '../google-places-api/google-places-api.module'
 import { PlaceEntity } from 'src/entities/place.entity'
 import { PointModule } from '../point/point.module'
+import { GeolocationModule } from '../geolocation/geolocation.module'
 
 @Module({
   providers: [PlaceService],
@@ -13,6 +14,7 @@ import { PointModule } from '../point/point.module'
     TypeOrmModule.forFeature([PlaceEntity]),
     GooglePlacesApiModule,
     PointModule,
+    GeolocationModule,
   ],
 })
 export class PlaceModule {}

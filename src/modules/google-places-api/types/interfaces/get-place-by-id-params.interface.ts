@@ -3,5 +3,4 @@ interface GetPlaceByIdParams {
   fields: string
 }
 
-
 export default GetPlaceByIdParams

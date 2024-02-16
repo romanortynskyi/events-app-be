@@ -30,6 +30,8 @@ import SearchEventsInput from './inputs/search-events.input'
 import parseOpenSearchEventResponse from 'src/utils/parse-open-search-event-response'
 import { PointService } from '../point/point.service'
 import Event from 'src/models/event'
+import { PlaceEntity } from 'src/entities/place.entity'
+import Place from 'src/models/place'
 
 @Injectable()
 export class EventService {
@@ -98,7 +100,7 @@ export class EventService {
         place = await this.placeService.addPlace(placeId, queryRunner)
       }
 
-      const [latitude, longitude] = place.location.coordinates
+      const { latitude, longitude } = place.location
 
       const imageUploadResponse = await this.uploadService.uploadFile(
         image,
