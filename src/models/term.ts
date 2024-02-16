@@ -1,12 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql'
 
 @ObjectType()
-class Location {
+class Term {
   @Field()
-  latitude: number
+  offset: number
 
   @Field()
-  longitude: number
+  value: string
 }
 
-export default Location
+export default Term

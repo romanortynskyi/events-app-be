@@ -29,11 +29,17 @@ type UserEntity {
   events: EventEntity!
 }
 
+type Location {
+  latitude: Float!
+  longitude: Float!
+}
+
 type EventEntity {
   id: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
   placeId: String
+  geolocation: Location
   title: String
   description: String
   startDate: DateTime!
@@ -71,37 +77,49 @@ type GeolocationEntity {
   streetNumber: String
 }
 
-type Location {
-  lat: Float!
-  lng: Float!
-}
-
-type Geometry {
+type Place {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  originalId: String!
+  googleMapsUri: String!
   location: Location!
 }
 
-type Place {
-  name: String!
-  url: String!
-  geometry: Geometry!
-  country: String!
-  locality: String!
+type File {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  src: String
+  filename: String
+  provider: String!
+}
+
+type User {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  firstName: String!
+  lastName: String!
+  email: String!
+  recoveryCode: String
+  image: File!
 }
 
 type Event {
   id: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
-  placeId: String
+  geolocation: Location
   title: String
   description: String
   startDate: DateTime!
   endDate: DateTime!
   ticketPrice: Float!
-  author: UserEntity!
-  image: FileEntity!
+  author: User!
+  image: File!
   place: Place!
-  distance: Float!
+  distance: Float
 }
 
 type EventPage {
@@ -109,12 +127,69 @@ type EventPage {
   totalPagesCount: Int!
 }
 
+type MatchedSubstring {
+  length: Float!
+  offset: Float!
+}
+
+type StructuredFormatting {
+  mainText: String!
+  mainTextMatchedSubstrings: [MatchedSubstring!]!
+  secondaryText: String
+}
+
+type Term {
+  offset: Float!
+  value: String!
+}
+
+type AutocompletePlacesPrediction {
+  description: String!
+  matchedSubstrings: [MatchedSubstring!]!
+  placeId: String!
+  structuredFormatting: StructuredFormatting!
+  terms: [Term!]!
+  types: [String!]!
+}
+
+type AutocompletePlacesPredictionPage {
+  items: [AutocompletePlacesPrediction!]!
+  totalPagesCount: Int!
+}
+
 type Query {
   getMe: UserEntity!
   getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
-  getEvents(skip: Float!, limit: Float!): EventPage!
-  getEventById(id: Float!, latitude: Float!, longitude: Float!): Event!
-  autocompleteEvents(query: String!): [Event!]!
+  getEvents(skip: Int, limit: Int, bounds: GetEventsBounds): EventPage!
+  getEventById(id: Float!, originId: String!): Event!
+  autocompleteEvents(input: AutocompleteEventsInput!): EventPage!
+  searchEvents(input: SearchEventsInput!): EventPage!
+  autocompletePlaces(input: AutocompletePlacesInput!): AutocompletePlacesPredictionPage!
+}
+
+input GetEventsBounds {
+  xMin: Float!
+  yMin: Float!
+  xMax: Float!
+  yMax: Float!
+}
+
+input AutocompleteEventsInput {
+  query: String!
+  skip: Float!
+  limit: Float!
+}
+
+input SearchEventsInput {
+  query: String!
+  skip: Float!
+  limit: Float!
+}
+
+input AutocompletePlacesInput {
+  skip: Float!
+  limit: Float!
+  query: String!
 }
 
 type Mutation {
@@ -123,7 +198,7 @@ type Mutation {
   loginWithGoogle(idToken: String!): UserWithToken!
   loginWithFacebook(accessToken: String!): UserWithToken!
   sendResetPasswordEmail(input: ForgotPasswordInput!): Boolean!
-  addEvent(input: EventInput!): EventEntity!
+  addEvent(input: EventInput!): Event!
 }
 
 input SignUpInput {
