@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
 import { Point } from 'geojson'
+import * as wkx from 'wkx'
 
 import EventInput from './inputs/event.input'
 import UserEntity from 'src/entities/user.entity'
@@ -46,6 +47,11 @@ class EventService {
   ) {}
 
   parseEvent(event) {
+    const placeGeometry = wkx.Geometry.parse(
+      Buffer.from(event.place_location, 'hex'),
+    )
+    const [longitude, latitude] = placeGeometry.toGeoJSON()['coordinates']
+
     return {
       id: event.id,
       createdAt: event.createdAt,
@@ -65,6 +71,15 @@ class EventService {
         src: event.image_src,
         filename: event.image_filename,
         provider: event.image_provider,
+      },
+      place: {
+        id: event.place_id,
+        originalId: event.place_originalId,
+        googleMapsUri: event.place_googleMapsUri,
+        location: {
+          longitude,
+          latitude,
+        },
       },
     }
   }
@@ -235,7 +250,11 @@ class EventService {
           "image"."updatedAt" AS "image_updatedAt", 
           "image"."src" AS "image_src", 
           "image"."filename" AS "image_filename", 
-          "image"."provider" AS "image_provider" 
+          "image"."provider" AS "image_provider",
+          "place"."id" AS "place_id",
+          "place"."originalId" AS "place_originalId",
+          "place"."googleMapsUri" AS "place_googleMapsUri",
+          "place"."location" AS "place_location"
         FROM "event" "event" 
         INNER JOIN "file" "image" ON "image"."id" = "event"."imageId"
         INNER JOIN "place" "place" ON "place"."originalId" = "event"."placeId" 
@@ -256,7 +275,7 @@ class EventService {
     }
 
     return {
-      items: events,
+      items: events.map(this.parseEvent),
       totalPagesCount,
     }
   }

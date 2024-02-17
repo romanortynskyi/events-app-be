@@ -8,20 +8,11 @@ class Place extends Model {
   @Field()
   originalId: string
 
-  // @Field()
-  // name: string
-
   @Field()
   googleMapsUri: string
 
   @Field()
   location: Location
-
-  // @Field()
-  // country: string
-
-  // @Field()
-  // locality: string
 }
 
 export default Place
