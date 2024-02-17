@@ -1,7 +1,7 @@
 import { Resolver, Query, Args, Context } from '@nestjs/graphql'
 
 import GeolocationEntity from '../../entities/geolocation.entity'
-import { GeolocationService } from './geolocation.service'
+import GeolocationService from './geolocation.service'
 
 @Resolver(GeolocationEntity)
 class GeolocationResolver {

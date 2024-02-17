@@ -1,4 +1,4 @@
-import { EventEntity } from 'src/entities/event.entity'
+import EventEntity from 'src/entities/event.entity'
 import mapValues from './map-values'
 
 const parseOpenSearchEventResponse = (response): EventEntity => {

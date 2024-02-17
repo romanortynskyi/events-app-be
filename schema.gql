@@ -111,6 +111,7 @@ type Event {
   createdAt: DateTime!
   updatedAt: DateTime!
   geolocation: Location
+  placeId: String!
   title: String
   description: String
   startDate: DateTime!

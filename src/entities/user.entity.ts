@@ -7,13 +7,13 @@ import {
 } from 'typeorm'
 import { Field, ObjectType } from '@nestjs/graphql'
 
-import { BaseEntity } from './base.entity'
-import { FileEntity } from './file.entity'
-import { EventEntity } from './event.entity'
+import BaseEntity from './base.entity'
+import FileEntity from './file.entity'
+import EventEntity from './event.entity'
 
 @ObjectType()
 @Entity('user')
-export class UserEntity extends BaseEntity {
+class UserEntity extends BaseEntity {
   @Field()
   @Column()
   firstName: string
@@ -43,3 +43,5 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => EventEntity, (event) => event.author)
   events: EventEntity[]
 }
+
+export default UserEntity

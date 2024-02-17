@@ -7,13 +7,13 @@ import {
 } from 'typeorm'
 import { Point } from 'geojson'
 
-import { BaseEntity } from './base.entity'
+import BaseEntity from './base.entity'
 import Location from '../models/location'
 import PlaceTranslationEntity from './place-translation.entity'
 
 @ObjectType()
 @Entity('place')
-export class PlaceEntity extends BaseEntity {
+class PlaceEntity extends BaseEntity {
   @Field()
   @Column({ unique: true })
   originalId: string
@@ -38,3 +38,5 @@ export class PlaceEntity extends BaseEntity {
   )
   translations: PlaceTranslationEntity[]
 }
+
+export default PlaceEntity

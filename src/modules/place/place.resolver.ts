@@ -1,6 +1,6 @@
 import { Resolver, Query, Args, Context } from '@nestjs/graphql'
 
-import { PlaceService } from './place.service'
+import PlaceService from './place.service'
 import Place from 'src/models/place'
 import AutocompletePlacesInput from './inputs/autocomplete-places.input'
 import AutocompletePlacesPredictionPage from 'src/models/autocomplete-places-prediction-page'

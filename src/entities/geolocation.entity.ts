@@ -1,7 +1,7 @@
 import { Column, Entity } from 'typeorm'
 import { Field, ObjectType } from '@nestjs/graphql'
 
-import { BaseEntity } from './base.entity'
+import BaseEntity from './base.entity'
 
 @ObjectType()
 @Entity('geolocation')

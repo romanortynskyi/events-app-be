@@ -1,9 +1,9 @@
 import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql'
 
 import EventInput from './inputs/event.input'
-import { EventService } from './event.service'
+import EventService from './event.service'
 import { CurrentUser } from 'src/decorators/current-user'
-import { UserEntity } from 'src/entities/user.entity'
+import UserEntity from 'src/entities/user.entity'
 import { UseGuards } from '@nestjs/common'
 import { JwtGuard } from '../auth/guards'
 import EventPage from 'src/models/event-page'

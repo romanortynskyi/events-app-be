@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import Axios from 'axios'
 
 @Injectable()
-export class DistanceMatrixService {
+class DistanceMatrixService {
   constructor(private readonly configService: ConfigService) {}
   
   async getDistance({ origin, destination }): Promise<number> {
@@ -27,3 +27,5 @@ export class DistanceMatrixService {
     return response.data.rows[0].elements[0].distance?.value || 0
   }
 }
+
+export default DistanceMatrixService

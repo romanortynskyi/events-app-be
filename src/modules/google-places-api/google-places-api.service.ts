@@ -6,7 +6,7 @@ import GetPlaceByIdParams from './types/interfaces/get-place-by-id-params.interf
 import GooglePlace from 'src/models/google-place'
 
 @Injectable()
-export class GooglePlacesApiService {
+class GooglePlacesApiService {
   constructor(private readonly configService: ConfigService) {}
 
   async getPlaceById(params: GetPlaceByIdParams): Promise<GooglePlace> {
@@ -29,3 +29,5 @@ export class GooglePlacesApiService {
     }
   }
 }
+
+export default GooglePlacesApiService

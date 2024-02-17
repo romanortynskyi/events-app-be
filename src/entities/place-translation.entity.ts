@@ -5,8 +5,8 @@ import {
   ManyToOne,
 } from 'typeorm'
 
-import { BaseEntity } from './base.entity'
-import { PlaceEntity } from './place.entity'
+import BaseEntity from './base.entity'
+import PlaceEntity from './place.entity'
 
 @ObjectType()
 @Entity('place-translation')

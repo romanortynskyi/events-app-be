@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { Client } from '@opensearch-project/opensearch'
 
 @Injectable()
-export class OpenSearchService {
+class OpenSearchService {
   client: Client
 
   constructor(private config: ConfigService) {
@@ -75,3 +75,5 @@ export class OpenSearchService {
     })
   }
 }
+
+export default OpenSearchService

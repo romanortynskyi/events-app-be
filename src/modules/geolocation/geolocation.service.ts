@@ -5,7 +5,7 @@ import Axios from 'axios'
 import GeolocationEntity from 'src/entities/geolocation.entity'
 
 @Injectable()
-export class GeolocationService {
+class GeolocationService {
   constructor(private readonly configService: ConfigService) {}
 
   getCountry(addressComponents): string {
@@ -48,3 +48,5 @@ export class GeolocationService {
     }
   }
 }
+
+export default GeolocationService

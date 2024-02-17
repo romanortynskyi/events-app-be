@@ -6,35 +6,32 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
 import { Point } from 'geojson'
-import * as wkx from 'wkx'
 
 import EventInput from './inputs/event.input'
-import { UserEntity } from 'src/entities/user.entity'
-import { EventEntity } from 'src/entities/event.entity'
+import UserEntity from 'src/entities/user.entity'
+import EventEntity from 'src/entities/event.entity'
 import {
   EVENT_NOT_FOUND,
   INTERNAL_SERVER_ERROR,
   USER_NOT_FOUND,
 } from 'src/enums/error-messages'
-import { UploadService } from '../upload/upload.service'
+import UploadService from '../upload/upload.service'
 import Folder from 'src/enums/folder.enum'
-import { FileEntity } from 'src/entities/file.entity'
+import FileEntity from 'src/entities/file.entity'
 import FileProvider from 'src/enums/file-provider.enum'
 import EventPage from 'src/models/event-page'
-import { PlaceService } from '../place/place.service'
-import { DistanceMatrixService } from '../distance-matrix/distance-matrix.service'
-import { OpenSearchService } from '../open-search/open-search.service'
+import PlaceService from '../place/place.service'
+import DistanceMatrixService from '../distance-matrix/distance-matrix.service'
+import OpenSearchService from '../open-search/open-search.service'
 import OpenSearchIndex from 'src/enums/open-search-index.enum'
 import AutocompleteEventsInput from './inputs/autocomplete-events.input'
 import SearchEventsInput from './inputs/search-events.input'
 import parseOpenSearchEventResponse from 'src/utils/parse-open-search-event-response'
-import { PointService } from '../point/point.service'
+import PointService from '../point/point.service'
 import Event from 'src/models/event'
-import { PlaceEntity } from 'src/entities/place.entity'
-import Place from 'src/models/place'
 
 @Injectable()
-export class EventService {
+class EventService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
@@ -380,3 +377,5 @@ export class EventService {
     }
   }
 }
+
+export default EventService

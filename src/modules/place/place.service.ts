@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { QueryRunner, Repository } from 'typeorm'
+import { Point } from 'geojson'
 
 import AutocompletePlacesInput from './inputs/autocomplete-places.input'
-import { PlaceEntity } from 'src/entities/place.entity'
-import { GooglePlacesApiService } from '../google-places-api/google-places-api.service'
+import PlaceEntity from 'src/entities/place.entity'
+import GooglePlacesApiService from '../google-places-api/google-places-api.service'
 import Place from 'src/models/place'
-import { Point } from 'geojson'
-import { PointService } from '../point/point.service'
+import PointService from '../point/point.service'
 import PlaceTranslationEntity from 'src/entities/place-translation.entity'
-import { GeolocationService } from '../geolocation/geolocation.service'
+import GeolocationService from '../geolocation/geolocation.service'
 import GooglePlace from 'src/models/google-place'
 import supportedLanguages from 'src/consts/supported-languages'
 
 @Injectable()
-export class PlaceService {
+class PlaceService {
   constructor(
     @InjectRepository(PlaceEntity)
     private readonly placeRepository: Repository<PlaceEntity>,
@@ -108,3 +108,5 @@ export class PlaceService {
     
   }
 }
+
+export default PlaceService

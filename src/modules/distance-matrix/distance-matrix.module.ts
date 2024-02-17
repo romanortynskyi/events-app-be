@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common'
-import { DistanceMatrixService } from './distance-matrix.service'
+
+import DistanceMatrixService from './distance-matrix.service'
 
 @Module({
   providers: [DistanceMatrixService],
   exports: [DistanceMatrixService],
 })
-export class DistanceMatrixModule {}
+class DistanceMatrixModule {}
+
+export default DistanceMatrixModule

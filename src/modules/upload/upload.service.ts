@@ -6,7 +6,7 @@ import { INTERNAL_SERVER_ERROR } from 'src/enums/error-messages'
 import { v4 as uuid } from 'uuid'
 
 @Injectable()
-export class UploadService {
+class UploadService {
   bucket: string
   s3: AWS.S3
 
@@ -79,3 +79,5 @@ export class UploadService {
     })
   }
 }
+
+export default UploadService

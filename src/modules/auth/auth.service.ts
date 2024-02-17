@@ -14,7 +14,7 @@ import { OAuth2Client } from 'google-auth-library'
 import Axios from 'axios'
 import { instanceToPlain } from 'class-transformer'
 
-import { UserEntity } from 'src/entities/user.entity'
+import UserEntity from 'src/entities/user.entity'
 import { getObjectWithoutKeys } from 'src/utils/get-object-without-keys'
 import {
   EMAIL_ALREADY_EXISTS,
@@ -22,21 +22,21 @@ import {
   USER_NOT_FOUND,
   WRONG_EMAIL_OR_PASSWORD,
 } from 'src/enums/error-messages'
-import { UploadService } from 'src/modules/upload/upload.service'
+import UploadService from 'src/modules/upload/upload.service'
 import EmailSubject from 'src/enums/email-subject'
 import { getRandomCode } from 'src/utils/get-random-code'
-import { EmailService } from '../email/email.service'
+import EmailService from '../email/email.service'
 import SignUpInput from './inputs/sign-up.input'
 import LoginInput from './inputs/login.input'
 import ForgotPasswordInput from './inputs/forgot-password.input'
 import ResetPasswordInput from './inputs/reset-password.input'
 import VerifyRecoveryCodeInput from './inputs/verify-recovery-code.input'
 import FileProvider from 'src/enums/file-provider.enum'
-import { FileEntity } from 'src/entities/file.entity'
+import FileEntity from 'src/entities/file.entity'
 import AuthProvider from 'src/enums/auth-provider.enum'
 
 @Injectable()
-export class AuthService {
+class AuthService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
@@ -336,3 +336,5 @@ export class AuthService {
     }
   }
 }
+
+export default AuthService

@@ -7,14 +7,14 @@ import {
 } from 'typeorm'
 import { Point } from 'geojson'
 
-import { BaseEntity } from './base.entity'
-import { UserEntity } from './user.entity'
-import { FileEntity } from './file.entity'
+import BaseEntity from './base.entity'
+import UserEntity from './user.entity'
+import FileEntity from './file.entity'
 import Location from '../models/location'
 
 @ObjectType()
 @Entity('event')
-export class EventEntity extends BaseEntity {
+class EventEntity extends BaseEntity {
   @Field({ nullable: true })
   @Column({ nullable: true })
   placeId: string
@@ -57,3 +57,5 @@ export class EventEntity extends BaseEntity {
   @ManyToOne(() => FileEntity)
   image: FileEntity
 }
+
+export default EventEntity

@@ -1,12 +1,12 @@
 import { Column, Entity } from 'typeorm'
 import { Field, ObjectType } from '@nestjs/graphql'
 
-import { BaseEntity } from './base.entity'
+import BaseEntity from './base.entity'
 import FileProvider from '../enums/file-provider.enum'
 
 @ObjectType()
 @Entity('file')
-export class FileEntity extends BaseEntity {
+class FileEntity extends BaseEntity {
   @Field({ nullable: true })
   @Column({ nullable: true })
   src?: string
@@ -19,3 +19,5 @@ export class FileEntity extends BaseEntity {
   @Column({ default: FileProvider.Custom })
   provider: FileProvider
 }
+
+export default FileEntity

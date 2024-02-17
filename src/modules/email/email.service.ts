@@ -12,7 +12,7 @@ import { EMAIL_NOT_SENT, TEMPLATE_NOT_FOUND } from 'src/enums/error-messages'
 import { templateList } from 'src/emails'
 
 @Injectable()
-export class EmailService {
+class EmailService {
   constructor(private readonly configService: ConfigService) {}
 
   async sendEmail(options) {
@@ -61,3 +61,5 @@ export class EmailService {
     }
   }
 }
+
+export default EmailService

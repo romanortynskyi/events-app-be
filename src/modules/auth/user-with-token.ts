@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql'
-import { UserEntity } from 'src/entities/user.entity'
+
+import UserEntity from 'src/entities/user.entity'
 import AuthProvider from 'src/enums/auth-provider.enum'
 
 @ObjectType()

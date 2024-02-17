@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Point } from 'geojson'
 
 @Injectable()
-export class PointService {
+class PointService {
   createPoint(longitude: number, latitude: number): Point {
     return {
       type: 'Point',
@@ -10,3 +10,6 @@ export class PointService {
     }
   }
 }
+
+export default PointService
+
