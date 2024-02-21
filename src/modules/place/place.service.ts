@@ -23,6 +23,23 @@ class PlaceService {
     private readonly geolocationService: GeolocationService,
   ) {}
 
+  getCountry(addressComponents): string {
+    return addressComponents.filter((item) => item.types.includes('country'))[0].longText
+  }
+
+  getLocality(addressComponents): string {
+    return addressComponents.filter((item) => item.types.includes('locality'))[0].longText
+  }
+
+  getRoute(addressComponents): string {
+    return addressComponents.filter((item) => item.types.includes('route'))[0].longText
+  }
+
+  getStreetNumber(addressComponents): string {
+    const partsWithStreetNumber = addressComponents.filter((item) => item.types.includes('street_number'))
+    return partsWithStreetNumber.length ? partsWithStreetNumber[0].longText : null
+  }
+
   async addPlace(id: string, queryRunner: QueryRunner): Promise<Place> {
     let place: Place | GooglePlace = await this.getPlaceById(id)
 
@@ -38,10 +55,10 @@ class PlaceService {
 
         const { addressComponents, displayName } = place
 
-        const country = this.geolocationService.getCountry(addressComponents)
-        const locality = this.geolocationService.getLocality(addressComponents)
-        const route = this.geolocationService.getRoute(addressComponents)
-        const streetNumber = this.geolocationService.getStreetNumber(addressComponents)
+        const country = this.getCountry(addressComponents)
+        const locality = this.getLocality(addressComponents)
+        const route = this.getRoute(addressComponents)
+        const streetNumber = this.getStreetNumber(addressComponents)
 
         const placeTranslationEntity = new PlaceTranslationEntity()
         placeTranslationEntity.name = displayName.text
