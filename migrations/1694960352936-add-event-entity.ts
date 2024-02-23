@@ -9,7 +9,7 @@ class AddEventEntity1694960352936 implements MigrationInterface {
         "id" SERIAL NOT NULL,
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-        "placeId" character varying,
+        "placeId" integer,
         "title" character varying,
         "description" character varying,
         "startDate" TIMESTAMP WITH TIME ZONE NOT NULL,

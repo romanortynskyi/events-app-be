@@ -11,9 +11,6 @@ class Event extends Model {
   @Field({ nullable: true })
   geolocation: Location
 
-  @Field()
-  placeId: string
-
   @Field({ nullable: true })
   title: string
 

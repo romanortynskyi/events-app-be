@@ -10,30 +10,26 @@ import { Point } from 'geojson'
 import BaseEntity from './base.entity'
 import UserEntity from './user.entity'
 import FileEntity from './file.entity'
-import Location from '../models/location'
+import PlaceEntity from './place.entity'
 
 @ObjectType()
 @Entity('event')
 class EventEntity extends BaseEntity {
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  placeId: string
+  @ManyToOne(() => PlaceEntity, (place) => place.events)
+  place: PlaceEntity
 
-  @Field(() => Location, { nullable: true })
   @Index({ spatial: true })
   @Column({
     type: 'geography',
-    spatialFeatureType: 'Point', 
+    spatialFeatureType: 'Point',
     srid: 4326,
     nullable: true,
   })
   geolocation: Point
 
-  @Field({ nullable: true })
   @Column({ nullable: true })
   title: string
 
-  @Field({ nullable: true })
   @Column({ nullable: true })
   description: string
 
@@ -41,19 +37,15 @@ class EventEntity extends BaseEntity {
   @Column({ type: 'timestamptz', nullable: false })
   startDate: Date
 
-  @Field()
   @Column({ type: 'timestamptz', nullable: false })
   endDate: Date
 
-  @Field()
   @Column({ type: 'decimal' })
   ticketPrice: number
 
-  @Field(() => UserEntity)
   @ManyToOne(() => UserEntity, (user) => user.events)
   author: UserEntity
 
-  @Field(() => FileEntity)
   @ManyToOne(() => FileEntity)
   image: FileEntity
 }

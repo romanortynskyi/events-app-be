@@ -29,24 +29,11 @@ type UserEntity {
   events: EventEntity!
 }
 
-type Location {
-  latitude: Float!
-  longitude: Float!
-}
-
 type EventEntity {
   id: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
-  placeId: String
-  geolocation: Location
-  title: String
-  description: String
   startDate: DateTime!
-  endDate: DateTime!
-  ticketPrice: Float!
-  author: UserEntity!
-  image: FileEntity!
 }
 
 type UserWithToken {
@@ -75,6 +62,11 @@ type GeolocationEntity {
   locality: String
   route: String
   streetNumber: String
+}
+
+type Location {
+  latitude: Float!
+  longitude: Float!
 }
 
 type Place {
@@ -111,7 +103,6 @@ type Event {
   createdAt: DateTime!
   updatedAt: DateTime!
   geolocation: Location
-  placeId: String!
   title: String
   description: String
   startDate: DateTime!

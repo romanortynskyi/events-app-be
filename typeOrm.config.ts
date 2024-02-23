@@ -15,6 +15,7 @@ import AddEventGeolocation1704812235974 from './migrations/1704812235974-add-eve
 import AddPlaceEntity1708032193434 from './migrations/1708028281000-add-place-entity'
 import AddPlaceLocation1708028281541 from './migrations/1708028281541-add-place-location'
 import AddPlaceTranslation1708039137615 from './migrations/1708039137615-add-place-translation'
+import AddEventPlace1708700312026 from './migrations/1708700312026-add-event-place'
 
 config({
   path: '.env.local',
@@ -45,5 +46,6 @@ export default new DataSource({
     AddPlaceEntity1708032193434,
     AddPlaceLocation1708028281541,
     AddPlaceTranslation1708039137615,
+    AddEventPlace1708700312026,
   ],
 })

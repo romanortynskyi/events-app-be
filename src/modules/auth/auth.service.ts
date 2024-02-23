@@ -34,6 +34,8 @@ import VerifyRecoveryCodeInput from './inputs/verify-recovery-code.input'
 import FileProvider from 'src/enums/file-provider.enum'
 import FileEntity from 'src/entities/file.entity'
 import AuthProvider from 'src/enums/auth-provider.enum'
+import OpenSearchService from '../open-search/open-search.service'
+import OpenSearchIndex from 'src/enums/open-search-index.enum'
 
 @Injectable()
 class AuthService {
@@ -44,6 +46,7 @@ class AuthService {
     private readonly jwtService: JwtService,
     private readonly uploadService: UploadService,
     private readonly emailService: EmailService,
+    private readonly openSearchService: OpenSearchService,
     private dataSource: DataSource,
   ) {}
 
@@ -83,6 +86,13 @@ class AuthService {
       token,
       provider: AuthProvider.Email,
     }
+
+    const userToIndex = getObjectWithoutKeys(
+      userWithoutPassword,
+      ['recoveryCode'],
+    )
+
+    await this.openSearchService.index(OpenSearchIndex.Users, userToIndex)
 
     return userToSend
   }

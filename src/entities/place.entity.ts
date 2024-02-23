@@ -10,15 +10,14 @@ import { Point } from 'geojson'
 import BaseEntity from './base.entity'
 import Location from '../models/location'
 import PlaceTranslationEntity from './place-translation.entity'
+import EventEntity from './event.entity'
 
 @ObjectType()
 @Entity('place')
 class PlaceEntity extends BaseEntity {
-  @Field()
   @Column({ unique: true })
   originalId: string
 
-  @Field(() => Location, { nullable: true })
   @Index({ spatial: true })
   @Column({
     type: 'geography',
@@ -28,7 +27,6 @@ class PlaceEntity extends BaseEntity {
   })
   location: Point
 
-  @Field()
   @Column({ unique: true })
   googleMapsUri: string
 
@@ -37,6 +35,9 @@ class PlaceEntity extends BaseEntity {
     (placeTranslation) => placeTranslation.place,
   )
   translations: PlaceTranslationEntity[]
+
+  @OneToMany(() => EventEntity, (event) => event.place)
+  events: EventEntity[]
 }
 
 export default PlaceEntity

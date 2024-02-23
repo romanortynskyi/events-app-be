@@ -30,6 +30,7 @@ import SearchEventsInput from './inputs/search-events.input'
 import parseOpenSearchEventResponse from 'src/utils/parse-open-search-event-response'
 import PointService from '../point/point.service'
 import Event from 'src/models/event'
+import { getObjectWithoutKeys } from 'src/utils/get-object-without-keys'
 
 @Injectable()
 class EventService {
@@ -143,7 +144,10 @@ class EventService {
           startDate: new Date(startDateStr),
           endDate: new Date(endDateStr),
           ticketPrice,
-          placeId,
+          place: {
+            ...place,
+            location: this.pointService.createPoint(longitude, latitude),
+          },
           geolocation,
           image: imageEntity,
           author: user,
@@ -153,7 +157,12 @@ class EventService {
 
       await queryRunner.commitTransaction()
 
-      await this.openSearchService.index(OpenSearchIndex.Events, eventEntity)
+      const eventToIndex = getObjectWithoutKeys(eventEntity, [
+        'author',
+        'image',
+      ])
+
+      await this.openSearchService.index(OpenSearchIndex.Events, eventToIndex)
 
       return {
         ...eventEntity,
@@ -288,6 +297,7 @@ class EventService {
       relations: {
         image: true,
         author: true,
+        place: true,
       },
     })
 
@@ -295,11 +305,11 @@ class EventService {
       throw new NotFoundException(EVENT_NOT_FOUND)
     }
 
-    const place = await this.placeService.getPlaceById(event.placeId)
+    const place = await this.placeService.getPlaceById(event.place.originalId)
 
     const distance = await this.distanceMatrixService.getDistance({
       origin: originId,
-      destination: event.placeId,
+      destination: event.place.originalId,
     })
 
     const [lng, lat] = event.geolocation.coordinates

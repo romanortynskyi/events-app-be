@@ -8,6 +8,7 @@ import AuthService from './auth.service'
 import UploadModule from '../upload/upload.module'
 import EmailModule from '../email/email.module'
 import { JwtStrategy } from './strategy'
+import OpenSearchModule from '../open-search/open-search.module'
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtStrategy } from './strategy'
     JwtModule.register({}),
     UploadModule,
     EmailModule,
+    OpenSearchModule,
   ],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
