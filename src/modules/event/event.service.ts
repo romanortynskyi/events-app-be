@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
-import { Point } from 'geojson'
 import * as wkx from 'wkx'
 
 import EventInput from './inputs/event.input'
@@ -31,6 +30,7 @@ import parseOpenSearchEventResponse from 'src/utils/parse-open-search-event-resp
 import PointService from '../point/point.service'
 import Event from 'src/models/event'
 import { getObjectWithoutKeys } from 'src/utils/get-object-without-keys'
+import FileService from '../file/file.service'
 
 @Injectable()
 class EventService {
@@ -45,6 +45,7 @@ class EventService {
     private readonly distanceMatrixService: DistanceMatrixService,
     private readonly openSearchService: OpenSearchService,
     private readonly pointService: PointService,
+    private readonly fileService: FileService,
   ) {}
 
   parseEvent(event) {
@@ -102,8 +103,10 @@ class EventService {
       placeId,
     } = input
 
-    const queryRunner = this.dataSource.createQueryRunner()
+    let isNewPlace = false
 
+    const queryRunner = this.dataSource.createQueryRunner()
+    
     await queryRunner.startTransaction()
 
     try {
@@ -111,6 +114,7 @@ class EventService {
 
       if (!place) {
         place = await this.placeService.addPlace(placeId, queryRunner)
+        isNewPlace = true
       }
 
       const { latitude, longitude } = place.location
@@ -131,11 +135,6 @@ class EventService {
 
       await queryRunner.manager.save(imageEntity)
 
-      const geolocation: Point = this.pointService.createPoint(
-        longitude,
-        latitude,
-      )
-
       const eventEntity: EventEntity = queryRunner.manager
         .getRepository(EventEntity)
         .create({
@@ -148,7 +147,6 @@ class EventService {
             ...place,
             location: this.pointService.createPoint(longitude, latitude),
           },
-          geolocation,
           image: imageEntity,
           author: user,
         })
@@ -157,19 +155,24 @@ class EventService {
 
       await queryRunner.commitTransaction()
 
-      const eventToIndex = getObjectWithoutKeys(eventEntity, [
-        'author',
-        'image',
-      ])
+      const eventToIndex = {
+        ...getObjectWithoutKeys(eventEntity, [
+          'author',
+          'image',
+          'place',
+        ]),
+        placeId,
+        imageId: imageEntity.id,
+      }
 
       await this.openSearchService.index(OpenSearchIndex.Events, eventToIndex)
+      
+      if (isNewPlace) {
+        await this.openSearchService.index(OpenSearchIndex.Places, place)
+      }
 
       return {
         ...eventEntity,
-        geolocation: {
-          longitude,
-          latitude,
-        },
         place: {
           ...place,
           location: {
@@ -206,7 +209,7 @@ class EventService {
       } = bounds
       
       if (skip && limit) {
-        whereSql = `WHERE ST_Within(geolocation::geometry, ST_MakeEnvelope($3, $4, $5, $6, 4326))`
+        whereSql = `WHERE ST_Within("place"."location::geometry", ST_MakeEnvelope($3, $4, $5, $6, 4326))`
         paginationSql = `
           OFFSET $1
           LIMIT $2
@@ -222,7 +225,7 @@ class EventService {
       }
 
       else {
-        whereSql = `WHERE ST_Within(geolocation::geometry, ST_MakeEnvelope($1, $2, $3, $4, 4326))`
+        whereSql = `WHERE ST_Within("place"."location::geometry", ST_MakeEnvelope($1, $2, $3, $4, 4326))`
         params = [
           xMin,
           yMin,
@@ -246,7 +249,6 @@ class EventService {
           "event"."createdAt" AS "createdAt", 
           "event"."updatedAt" AS "updatedAt", 
           "event"."placeId" AS "placeId", 
-          "event"."geolocation" AS "geolocation",
           "event"."title" AS "title", 
           "event"."description" AS "description", 
           "event"."startDate" AS "startDate", 
@@ -312,14 +314,8 @@ class EventService {
       destination: event.place.originalId,
     })
 
-    const [lng, lat] = event.geolocation.coordinates
-
     return {
       ...event,
-      geolocation: {
-        lng,
-        lat,
-      },
       place: {
         ...place,
         // country: this.geolocationService.getCountry(place.address_components),
@@ -380,22 +376,26 @@ class EventService {
   }
 
   async mapOpenSearchEvents(result, limit) {
-    const events = result.hits
-      .map((hit) => hit._source)
-      .map((event) => parseOpenSearchEventResponse(event))
-      .map(async (event) => {
-        const place = await this.placeService.getPlaceById(event.placeId)
+    const events = await Promise.all(
+      result.hits
+        .map((hit) => hit._source)
+        .map((event) => parseOpenSearchEventResponse(event))
+        .map(async (event) => {
+          const place = await this.placeService.getPlaceById(event.placeId)
+          const image = await this.fileService.getFileById(event.imageId)
 
-        return {
-          ...event,
-          place: {
-            ...place,
-            // country: this.geolocationService.getCountry(place.address_components),
-            // locality: this.geolocationService.getLocality(place.address_components),
-            // geometry: place.geometry,
-          },
-        }
-      })
+          return {
+            ...event,
+            image,
+            place: {
+              ...place,
+              // country: this.geolocationService.getCountry(place.address_components),
+              // locality: this.geolocationService.getLocality(place.address_components),
+              // geometry: place.geometry,
+            },
+          }
+        })
+      )
 
     const totalCount = result.total.value
     const totalPagesCount = Math.ceil(totalCount / limit)

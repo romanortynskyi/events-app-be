@@ -11,7 +11,6 @@ import AddUserEntity1693680054416 from './migrations/1693680054416-add-user-enti
 import AddFileEntity1693721031439 from './migrations/1693721031439-add-file-entity'
 import AddUserImage1694070673927 from './migrations/1694070673927-add-user-image'
 import AddEventEntity1694960352936 from './migrations/1694960352936-add-event-entity'
-import AddEventGeolocation1704812235974 from './migrations/1704812235974-add-event-geolocation'
 import AddPlaceEntity1708032193434 from './migrations/1708028281000-add-place-entity'
 import AddPlaceLocation1708028281541 from './migrations/1708028281541-add-place-location'
 import AddPlaceTranslation1708039137615 from './migrations/1708039137615-add-place-translation'
@@ -42,7 +41,6 @@ export default new DataSource({
     AddFileEntity1693721031439,
     AddUserImage1694070673927,
     AddEventEntity1694960352936,
-    AddEventGeolocation1704812235974,
     AddPlaceEntity1708032193434,
     AddPlaceLocation1708028281541,
     AddPlaceTranslation1708039137615,

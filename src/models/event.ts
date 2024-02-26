@@ -1,16 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql'
 
 import Place from './place'
-import Location from './location'
 import User from './user'
 import File from './file'
 import Model from './model'
 
 @ObjectType()
 class Event extends Model {
-  @Field({ nullable: true })
-  geolocation: Location
-
   @Field({ nullable: true })
   title: string
 

@@ -2,10 +2,8 @@ import { Field, ObjectType } from '@nestjs/graphql'
 import {
   Column,
   Entity,
-  Index,
   ManyToOne,
 } from 'typeorm'
-import { Point } from 'geojson'
 
 import BaseEntity from './base.entity'
 import UserEntity from './user.entity'
@@ -17,15 +15,6 @@ import PlaceEntity from './place.entity'
 class EventEntity extends BaseEntity {
   @ManyToOne(() => PlaceEntity, (place) => place.events)
   place: PlaceEntity
-
-  @Index({ spatial: true })
-  @Column({
-    type: 'geography',
-    spatialFeatureType: 'Point',
-    srid: 4326,
-    nullable: true,
-  })
-  geolocation: Point
 
   @Column({ nullable: true })
   title: string

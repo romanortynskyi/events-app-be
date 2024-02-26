@@ -11,6 +11,7 @@ import GeolocationModule from '../geolocation/geolocation.module'
 import DistanceMatrixModule from '../distance-matrix/distance-matrix.module'
 import OpenSearchModule from '../open-search/open-search.module'
 import PointModule from '../point/point.module'
+import FileModule from '../file/file.module'
 
 @Module({
   providers: [EventService],
@@ -26,6 +27,7 @@ import PointModule from '../point/point.module'
     DistanceMatrixModule,
     OpenSearchModule,
     PointModule,
+    FileModule,
   ],
   exports: [EventService],
 })

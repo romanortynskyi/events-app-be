@@ -102,7 +102,6 @@ type Event {
   id: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
-  geolocation: Location
   title: String
   description: String
   startDate: DateTime!
