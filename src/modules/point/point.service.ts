@@ -9,6 +9,15 @@ class PointService {
       coordinates: [longitude, latitude],
     }
   }
+
+  parsePoint(point) {
+    const [longitude, latitude] = point.coordinates
+
+    return {
+      longitude,
+      latitude,
+    }
+  }
 }
 
 export default PointService

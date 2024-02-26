@@ -12,6 +12,7 @@ import DistanceMatrixModule from '../distance-matrix/distance-matrix.module'
 import OpenSearchModule from '../open-search/open-search.module'
 import PointModule from '../point/point.module'
 import FileModule from '../file/file.module'
+import PlaceEntity from 'src/entities/place.entity'
 
 @Module({
   providers: [EventService],
@@ -20,6 +21,7 @@ import FileModule from '../file/file.module'
       UserEntity,
       EventEntity,
       FileEntity,
+      PlaceEntity,
     ]),
     UploadModule,
     PlaceModule,

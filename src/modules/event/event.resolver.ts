@@ -11,6 +11,7 @@ import Event from 'src/models/event'
 import AutocompleteEventsInput from './inputs/autocomplete-events.input'
 import SearchEventsInput from './inputs/search-events.input'
 import GetEventsBounds from './inputs/get-events-bounds.input'
+import SearchEventPage from 'src/models/search-event-page'
 
 @Resolver(Event)
 class EventResolver {
@@ -54,11 +55,15 @@ class EventResolver {
     return this.eventService.getEventById(id, originId)
   }
 
-  @Query(() => EventPage) autocompleteEvents(@Args('input') input: AutocompleteEventsInput) {
+  @Query(() => SearchEventPage) autocompleteEvents(
+    @Args('input') input: AutocompleteEventsInput,
+  ) {
     return this.eventService.autocompleteEvents(input)
   }
 
-  @Query(() => EventPage) searchEvents(@Args('input') input: SearchEventsInput) {
+  @Query(() => SearchEventPage) searchEvents(
+    @Args('input') input: SearchEventsInput,
+  ) {
     return this.eventService.searchEvents(input)
   }
 }

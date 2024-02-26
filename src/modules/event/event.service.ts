@@ -31,6 +31,10 @@ import PointService from '../point/point.service'
 import Event from 'src/models/event'
 import { getObjectWithoutKeys } from 'src/utils/get-object-without-keys'
 import FileService from '../file/file.service'
+import PlaceEntity from 'src/entities/place.entity'
+import SearchEventPage from 'src/models/search-event-page'
+import SearchEventResult from 'src/models/search-event-result'
+import parseHighlight from 'src/utils/parse-highlight'
 
 @Injectable()
 class EventService {
@@ -39,6 +43,8 @@ class EventService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(EventEntity)
     private readonly eventRepository: Repository<EventEntity>,
+    @InjectRepository(PlaceEntity)
+    private readonly placeRepository: Repository<PlaceEntity>,
     private readonly uploadService: UploadService,
     private readonly dataSource: DataSource,
     private readonly placeService: PlaceService,
@@ -325,7 +331,9 @@ class EventService {
     }
   }
 
-  async autocompleteEvents(input: AutocompleteEventsInput) {
+  async autocompleteEvents(
+    input: AutocompleteEventsInput,
+  ): Promise<SearchEventPage> {
     const {
       query,
       skip,
@@ -342,6 +350,11 @@ class EventService {
             title: {
               query,
             },
+          },
+        },
+        highlight: {
+          fields: {
+            title: {},
           },
         },
       },
@@ -376,12 +389,24 @@ class EventService {
   }
 
   async mapOpenSearchEvents(result, limit) {
+    const rawEvents = result.hits.map((hit) => ({
+      ...hit._source,
+      titleHighlightParts: parseHighlight(hit.highlight.title[0]),
+    }))
+    const placeIds = [...new Set(rawEvents.map((event) => event.placeId))]
+
+    const places = await this.placeRepository
+      .createQueryBuilder('place')
+      .where('"originalId" IN(:ids)', { ids: placeIds.join(',') })
+      .getMany()
+    
     const events = await Promise.all(
-      result.hits
-        .map((hit) => hit._source)
+      rawEvents
         .map((event) => parseOpenSearchEventResponse(event))
         .map(async (event) => {
-          const place = await this.placeService.getPlaceById(event.placeId)
+          const place = places.filter(
+            (place: PlaceEntity) => place.originalId === event.placeId
+          )[0]
           const image = await this.fileService.getFileById(event.imageId)
 
           return {
@@ -389,6 +414,7 @@ class EventService {
             image,
             place: {
               ...place,
+              location: this.pointService.parsePoint(place.location)
               // country: this.geolocationService.getCountry(place.address_components),
               // locality: this.geolocationService.getLocality(place.address_components),
               // geometry: place.geometry,
