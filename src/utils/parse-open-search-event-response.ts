@@ -1,7 +1,7 @@
-import EventEntity from 'src/entities/event.entity'
 import mapValues from './map-values'
+import SearchEventResult from 'src/models/search-event-result'
 
-const parseOpenSearchEventResponse = (response): EventEntity => {
+const parseOpenSearchEventResponse = (response): SearchEventResult => {
   const keys = [
     'createdAt',
     'updatedAt',
@@ -13,7 +13,7 @@ const parseOpenSearchEventResponse = (response): EventEntity => {
   
   const result = mapValues(response, keys, fn)
 
-  return result as EventEntity
+  return result
 }
 
 export default parseOpenSearchEventResponse

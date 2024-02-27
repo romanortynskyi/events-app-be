@@ -118,6 +118,32 @@ type EventPage {
   totalPagesCount: Int!
 }
 
+type Highlight {
+  text: String!
+  isMatch: Boolean!
+}
+
+type SearchEventResult {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  title: String
+  description: String
+  startDate: DateTime!
+  endDate: DateTime!
+  ticketPrice: Float!
+  author: User!
+  image: File!
+  place: Place!
+  distance: Float
+  titleHighlightParts: [Highlight!]!
+}
+
+type SearchEventPage {
+  items: [SearchEventResult!]!
+  totalPagesCount: Int!
+}
+
 type MatchedSubstring {
   length: Float!
   offset: Float!
@@ -153,8 +179,8 @@ type Query {
   getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
   getEvents(skip: Int, limit: Int, bounds: GetEventsBounds): EventPage!
   getEventById(id: Float!, originId: String!): Event!
-  autocompleteEvents(input: AutocompleteEventsInput!): EventPage!
-  searchEvents(input: SearchEventsInput!): EventPage!
+  autocompleteEvents(input: AutocompleteEventsInput!): SearchEventPage!
+  searchEvents(input: SearchEventsInput!): SearchEventPage!
   autocompletePlaces(input: AutocompletePlacesInput!): AutocompletePlacesPredictionPage!
 }
 

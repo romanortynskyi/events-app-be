@@ -1,7 +1,9 @@
+import Language from 'src/enums/language.enum'
+
 const supportedLanguages = [
-  'en',
-  'uk',
-  'es',
+  Language.EN,
+  Language.UK,
+  Language.ES,
 ]
 
 export default supportedLanguages
