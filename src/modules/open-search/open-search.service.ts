@@ -31,12 +31,10 @@ class OpenSearchService {
     const indexExists = await this.indexExists(index)
 
     if (!indexExists) {
-      const response = await this.client.indices.create({
+      await this.client.indices.create({
         index,
         body,
       })
-
-      console.log('Index creation response:', response);
     }
   }
 

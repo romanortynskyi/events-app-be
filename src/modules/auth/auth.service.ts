@@ -47,7 +47,7 @@ class AuthService {
     private readonly uploadService: UploadService,
     private readonly emailService: EmailService,
     private readonly openSearchService: OpenSearchService,
-    private dataSource: DataSource,
+    private readonly dataSource: DataSource,
   ) {}
 
   signToken(user: UserEntity) {

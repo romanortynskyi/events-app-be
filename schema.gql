@@ -174,6 +174,29 @@ type AutocompletePlacesPredictionPage {
   totalPagesCount: Int!
 }
 
+type CategoryTranslation {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  language: Language!
+}
+
+enum Language {
+  EN
+  UK
+  ES
+}
+
+type Category {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  translations: [CategoryTranslation!]!
+  eventsCount: Float!
+  events: [Event!]!
+}
+
 type Query {
   getMe: UserEntity!
   getGeolocationByCoords(latitude: Float!, longitude: Float!): GeolocationEntity!
@@ -182,6 +205,9 @@ type Query {
   autocompleteEvents(input: AutocompleteEventsInput!): SearchEventPage!
   searchEvents(input: SearchEventsInput!): SearchEventPage!
   autocompletePlaces(input: AutocompletePlacesInput!): AutocompletePlacesPredictionPage!
+  getCategories: [Category!]!
+  getCategoryById(id: Float!): Category!
+  checkIfCategoryTranslationExists(input: CheckIfCategoryTranslationExistsInput!): Boolean!
 }
 
 input GetEventsBounds {
@@ -209,6 +235,11 @@ input AutocompletePlacesInput {
   query: String!
 }
 
+input CheckIfCategoryTranslationExistsInput {
+  name: String!
+  language: Language!
+}
+
 type Mutation {
   signUp(input: SignUpInput!): UserWithToken!
   login(input: LoginInput!): UserWithToken!
@@ -216,6 +247,7 @@ type Mutation {
   loginWithFacebook(accessToken: String!): UserWithToken!
   sendResetPasswordEmail(input: ForgotPasswordInput!): Boolean!
   addEvent(input: EventInput!): Event!
+  addCategory(input: CategoryInput!): Category!
 }
 
 input SignUpInput {
@@ -247,3 +279,12 @@ input EventInput {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+input CategoryInput {
+  translations: [CategoryTranslationInput!]!
+}
+
+input CategoryTranslationInput {
+  name: String!
+  language: Language!
+}

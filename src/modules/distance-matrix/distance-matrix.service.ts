@@ -7,7 +7,6 @@ class DistanceMatrixService {
   constructor(private readonly configService: ConfigService) {}
   
   async getDistance({ origin, destination }): Promise<number> {
-    console.log(`origin, destination: ${origin}, ${destination}`)
     const response = await Axios.get(
       'https://maps.googleapis.com/maps/api/distancematrix/json',
       {
@@ -18,11 +17,6 @@ class DistanceMatrixService {
         },
       }
     )
-
-    console.log(`origin: ${origin.latitude},${origin.longitude}`)
-    console.log(`destination: ${destination}`)
-
-    console.log(response.data.rows[0].elements)
   
     return response.data.rows[0].elements[0].distance?.value || 0
   }

@@ -6,6 +6,8 @@ import FileEntity from 'src/entities/file.entity'
 import PlaceTranslationEntity from 'src/entities/place-translation.entity'
 import PlaceEntity from 'src/entities/place.entity'
 import UserEntity from 'src/entities/user.entity'
+import CategoryEntity from 'src/entities/category.entity'
+import CategoryTranslationEntity from 'src/entities/category-translation.entity'
 
 const ormOptions: TypeOrmModuleAsyncOptions = {
   imports: [ConfigModule],
@@ -23,6 +25,8 @@ const ormOptions: TypeOrmModuleAsyncOptions = {
       EventEntity,
       PlaceEntity,
       PlaceTranslationEntity,
+      CategoryEntity,
+      CategoryTranslationEntity,
     ],
     logging: true,
   }),

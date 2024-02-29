@@ -14,6 +14,10 @@ import AuthResolver from './modules/auth/auth.resolver'
 import GeolocationResolver from './modules/geolocation/geolocation.resolver'
 import EventResolver from './modules/event/event.resolver'
 import PlaceResolver from './modules/place/place.resolver'
+import CategoryTranslationModule from './modules/category-translation/category-translation.module'
+import CategoryTranslationResolver from './modules/category-translation/category-translation.resolver'
+import CategoryModule from './modules/category/category.module'
+import CategoryResolver from './modules/category/category.resolver'
 
 @Module({
   imports: [
@@ -28,12 +32,16 @@ import PlaceResolver from './modules/place/place.resolver'
     GeolocationModule,
     EventModule,
     PlaceModule,
+    CategoryModule,
+    CategoryTranslationModule,
   ],
   providers: [
     AuthResolver,
     GeolocationResolver,
     EventResolver,
     PlaceResolver,
+    CategoryResolver,
+    CategoryTranslationResolver,
   ],
 })
 

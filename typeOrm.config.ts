@@ -7,6 +7,8 @@ import FileEntity from './src/entities/file.entity'
 import EventEntity from './src/entities/event.entity'
 import PlaceEntity from './src/entities/place.entity'
 import PlaceTranslationEntity from './src/entities/place-translation.entity'
+import CategoryEntity from './src/entities/category.entity'
+import CategoryTranslationEntity from './src/entities/category-translation.entity'
 import AddUserEntity1693680054416 from './migrations/1693680054416-add-user-entity'
 import AddFileEntity1693721031439 from './migrations/1693721031439-add-file-entity'
 import AddUserImage1694070673927 from './migrations/1694070673927-add-user-image'
@@ -15,6 +17,8 @@ import AddPlaceEntity1708032193434 from './migrations/1708028281000-add-place-en
 import AddPlaceLocation1708028281541 from './migrations/1708028281541-add-place-location'
 import AddPlaceTranslation1708039137615 from './migrations/1708039137615-add-place-translation'
 import AddEventPlace1708700312026 from './migrations/1708700312026-add-event-place'
+import AddCategoryEntity1709216583223 from './migrations/1709216583223-add-category-entity'
+import AddCategoryTranslation1709218824977 from './migrations/1709218824977-add-category-translation'
 
 config({
   path: '.env.local',
@@ -35,6 +39,8 @@ export default new DataSource({
     EventEntity,
     PlaceEntity,
     PlaceTranslationEntity,
+    CategoryEntity,
+    CategoryTranslationEntity,
   ],
   migrations: [
     AddUserEntity1693680054416,
@@ -45,5 +51,7 @@ export default new DataSource({
     AddPlaceLocation1708028281541,
     AddPlaceTranslation1708039137615,
     AddEventPlace1708700312026,
+    AddCategoryEntity1709216583223,
+    AddCategoryTranslation1709218824977,
   ],
 })
