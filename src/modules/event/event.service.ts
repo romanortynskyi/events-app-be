@@ -215,7 +215,7 @@ class EventService {
       } = bounds
       
       if (skip && limit) {
-        whereSql = `WHERE ST_Within("place"."location::geometry", ST_MakeEnvelope($3, $4, $5, $6, 4326))`
+        whereSql = `WHERE ST_Within("place"."location"::geometry, ST_MakeEnvelope($3, $4, $5, $6, 4326))`
         paginationSql = `
           OFFSET $1
           LIMIT $2
@@ -231,7 +231,7 @@ class EventService {
       }
 
       else {
-        whereSql = `WHERE ST_Within("place"."location::geometry", ST_MakeEnvelope($1, $2, $3, $4, 4326))`
+        whereSql = `WHERE ST_Within("place"."location"::geometry, ST_MakeEnvelope($1, $2, $3, $4, 4326))`
         params = [
           xMin,
           yMin,
@@ -274,7 +274,7 @@ class EventService {
           "place"."location" AS "place_location"
         FROM "event" "event" 
         INNER JOIN "file" "image" ON "image"."id" = "event"."imageId"
-        INNER JOIN "place" "place" ON "place"."originalId" = "event"."placeId" 
+        INNER JOIN "place" "place" ON "place"."id" = "event"."placeId" 
         ${whereSql}
         ORDER BY
           "startDate" ASC,
@@ -391,7 +391,7 @@ class EventService {
   async mapOpenSearchEvents(result, limit) {
     const rawEvents = result.hits.map((hit) => ({
       ...hit._source,
-      titleHighlightParts: parseHighlight(hit.highlight.title[0]),
+      titleHighlightParts: parseHighlight(hit.highlight?.title[0] || ''),
     }))
     const placeIds = [...new Set(rawEvents.map((event) => event.placeId))]
 
