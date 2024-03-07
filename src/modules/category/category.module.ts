@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import CategoryService from './category.service'
 import CategoryEntity from 'src/entities/category.entity'
 import CategoryTranslationModule from '../category-translation/category-translation.module'
+import RecommendationModule from '../recommendation/recommendation.module'
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import CategoryTranslationModule from '../category-translation/category-translat
       CategoryEntity,
     ]),
     CategoryTranslationModule,
+    RecommendationModule,
   ],
   providers: [CategoryService],
   exports: [CategoryService],

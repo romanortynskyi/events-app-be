@@ -13,6 +13,7 @@ import OpenSearchModule from '../open-search/open-search.module'
 import PointModule from '../point/point.module'
 import FileModule from '../file/file.module'
 import PlaceEntity from 'src/entities/place.entity'
+import RecommendationModule from '../recommendation/recommendation.module'
 
 @Module({
   providers: [EventService],
@@ -30,6 +31,7 @@ import PlaceEntity from 'src/entities/place.entity'
     OpenSearchModule,
     PointModule,
     FileModule,
+    RecommendationModule,
   ],
   exports: [EventService],
 })

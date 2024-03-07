@@ -33,8 +33,8 @@ import { getObjectWithoutKeys } from 'src/utils/get-object-without-keys'
 import FileService from '../file/file.service'
 import PlaceEntity from 'src/entities/place.entity'
 import SearchEventPage from 'src/models/search-event-page'
-import SearchEventResult from 'src/models/search-event-result'
 import parseHighlight from 'src/utils/parse-highlight'
+import RecommendationService from '../recommendation/recommendation.service'
 
 @Injectable()
 class EventService {
@@ -52,6 +52,7 @@ class EventService {
     private readonly openSearchService: OpenSearchService,
     private readonly pointService: PointService,
     private readonly fileService: FileService,
+    private readonly recommendationService: RecommendationService,
   ) {}
 
   parseEvent(event) {
@@ -172,6 +173,7 @@ class EventService {
       }
 
       await this.openSearchService.index(OpenSearchIndex.Events, eventToIndex)
+      // await this.recom
       
       if (isNewPlace) {
         await this.openSearchService.index(OpenSearchIndex.Places, place)
