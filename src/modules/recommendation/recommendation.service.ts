@@ -26,6 +26,18 @@ class RecommendationService {
       throw new InternalServerErrorException(response.data)
     }
   }
+
+  async addEvent(event) {
+    const response = await this.axiosInstance.post('/events', event)
+
+    if (response.status === 201) {
+      return response.data
+    }
+
+    else {
+      throw new InternalServerErrorException(response.data)
+    }
+  }
 }
 
 export default RecommendationService

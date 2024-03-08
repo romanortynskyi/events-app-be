@@ -11,6 +11,7 @@ import EventInput from './inputs/event.input'
 import UserEntity from 'src/entities/user.entity'
 import EventEntity from 'src/entities/event.entity'
 import {
+  CATEGORY_NOT_FOUND,
   EVENT_NOT_FOUND,
   INTERNAL_SERVER_ERROR,
   USER_NOT_FOUND,
@@ -35,6 +36,7 @@ import PlaceEntity from 'src/entities/place.entity'
 import SearchEventPage from 'src/models/search-event-page'
 import parseHighlight from 'src/utils/parse-highlight'
 import RecommendationService from '../recommendation/recommendation.service'
+import CategoryEntity from 'src/entities/category.entity'
 
 @Injectable()
 class EventService {
@@ -45,6 +47,8 @@ class EventService {
     private readonly eventRepository: Repository<EventEntity>,
     @InjectRepository(PlaceEntity)
     private readonly placeRepository: Repository<PlaceEntity>,
+    @InjectRepository(CategoryEntity)
+    private readonly categoryRepository: Repository<CategoryEntity>,
     private readonly uploadService: UploadService,
     private readonly dataSource: DataSource,
     private readonly placeService: PlaceService,
@@ -108,6 +112,7 @@ class EventService {
       ticketPrice,
       image,
       placeId,
+      categories: categoryIds,
     } = input
 
     let isNewPlace = false
@@ -122,6 +127,26 @@ class EventService {
       if (!place) {
         place = await this.placeService.addPlace(placeId, queryRunner)
         isNewPlace = true
+      }
+
+      const categories = await queryRunner.manager
+        .getRepository(CategoryEntity)
+        .createQueryBuilder('category')
+        .where('category.id IN (:...ids)', { ids: categoryIds })
+        .getMany()
+
+      const categoryIdsFromDb = categories.map(
+        (category: CategoryEntity) => category.id,
+      )
+
+      if (categories.length < categoryIds.length) {
+        const firstMissingCategory = categoryIds.find(
+          (id: number) => !categoryIdsFromDb.includes(id),
+        )
+
+        if (firstMissingCategory) {
+          throw new NotFoundException(CATEGORY_NOT_FOUND)
+        }
       }
 
       const { latitude, longitude } = place.location
@@ -156,28 +181,32 @@ class EventService {
           },
           image: imageEntity,
           author: user,
+          categories,
         })
 
       await queryRunner.manager.save(eventEntity)
-
-      await queryRunner.commitTransaction()
 
       const eventToIndex = {
         ...getObjectWithoutKeys(eventEntity, [
           'author',
           'image',
           'place',
+          'categories',
         ]),
         placeId,
         imageId: imageEntity.id,
+        authorId: user.id,
+        categories: categoryIds,
       }
 
       await this.openSearchService.index(OpenSearchIndex.Events, eventToIndex)
-      // await this.recom
+      await this.recommendationService.addEvent(eventToIndex)
       
       if (isNewPlace) {
         await this.openSearchService.index(OpenSearchIndex.Places, place)
       }
+
+      await queryRunner.commitTransaction()
 
       return {
         ...eventEntity,

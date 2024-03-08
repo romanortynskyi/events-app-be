@@ -14,6 +14,7 @@ import PointModule from '../point/point.module'
 import FileModule from '../file/file.module'
 import PlaceEntity from 'src/entities/place.entity'
 import RecommendationModule from '../recommendation/recommendation.module'
+import CategoryEntity from 'src/entities/category.entity'
 
 @Module({
   providers: [EventService],
@@ -23,6 +24,7 @@ import RecommendationModule from '../recommendation/recommendation.module'
       EventEntity,
       FileEntity,
       PlaceEntity,
+      CategoryEntity,
     ]),
     UploadModule,
     PlaceModule,

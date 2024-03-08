@@ -75,7 +75,6 @@ class CategoryService {
   
     catch(e) {
       if (e instanceof ConflictException) {
-        console.log('shit')
         throw e
       }
 

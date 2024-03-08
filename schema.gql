@@ -275,6 +275,7 @@ input EventInput {
   endDate: String!
   ticketPrice: Float!
   image: Upload!
+  categories: [Int!]!
 }
 
 """The `Upload` scalar type represents a file upload."""

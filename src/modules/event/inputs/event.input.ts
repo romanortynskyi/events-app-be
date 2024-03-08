@@ -1,5 +1,14 @@
-import { Field, InputType } from '@nestjs/graphql'
-import { IsDate, IsNumber, IsString, Length } from 'class-validator'
+import {
+  Field,
+  InputType,
+  Int,
+} from '@nestjs/graphql'
+import {
+  IsDate,
+  IsNumber,
+  IsString,
+  Length,
+} from 'class-validator'
 // @ts-ignore
 import * as GraphQLUpload from 'graphql-upload/public/GraphQLUpload.js'
 import FileUpload from 'src/models/file-upload'
@@ -35,6 +44,9 @@ class EventInput {
 
   @Field(() => GraphQLUpload)
   image: Promise<FileUpload>
+
+  @Field(() => [Int])
+  categories: number[]
 }
 
 export default EventInput
