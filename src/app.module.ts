@@ -3,6 +3,7 @@ import { GraphQLModule } from '@nestjs/graphql'
 import { ApolloDriver } from '@nestjs/apollo'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
+import { PubSub } from 'graphql-subscriptions'
 
 import ormOptions from './configs/orm.config'
 import envConfig from './configs/env.config'
@@ -18,6 +19,7 @@ import CategoryTranslationModule from './modules/category-translation/category-t
 import CategoryTranslationResolver from './modules/category-translation/category-translation.resolver'
 import CategoryModule from './modules/category/category.module'
 import CategoryResolver from './modules/category/category.resolver'
+import { PubSubModule } from './modules/pub-sub/pub-sub.module'
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import CategoryResolver from './modules/category/category.resolver'
       autoSchemaFile: 'schema.gql',
       uploads: false,
       driver: ApolloDriver,
+      installSubscriptionHandlers: true,
     }),
     TypeOrmModule.forRootAsync(ormOptions),
     AuthModule,
@@ -34,6 +37,7 @@ import CategoryResolver from './modules/category/category.resolver'
     PlaceModule,
     CategoryModule,
     CategoryTranslationModule,
+    PubSubModule,
   ],
   providers: [
     AuthResolver,
@@ -42,6 +46,7 @@ import CategoryResolver from './modules/category/category.resolver'
     PlaceResolver,
     CategoryResolver,
     CategoryTranslationResolver,
+    PubSub,
   ],
 })
 

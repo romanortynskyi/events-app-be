@@ -51,6 +51,22 @@ type UserWithToken {
   provider: String!
 }
 
+type Progress {
+  loaded: Float!
+  total: Float!
+  key: String!
+  userId: Float!
+}
+
+type File {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  src: String
+  filename: String
+  provider: String!
+}
+
 type GeolocationEntity {
   id: Float!
   createdAt: DateTime!
@@ -76,15 +92,6 @@ type Place {
   originalId: String!
   googleMapsUri: String!
   location: Location!
-}
-
-type File {
-  id: Float!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  src: String
-  filename: String
-  provider: String!
 }
 
 type User {
@@ -246,6 +253,7 @@ type Mutation {
   loginWithGoogle(idToken: String!): UserWithToken!
   loginWithFacebook(accessToken: String!): UserWithToken!
   sendResetPasswordEmail(input: ForgotPasswordInput!): Boolean!
+  updateUserImage(input: UpdateUserImageInput!): File!
   addEvent(input: EventInput!): Event!
   addCategory(input: CategoryInput!): Category!
 }
@@ -267,6 +275,13 @@ input ForgotPasswordInput {
   language: String!
 }
 
+input UpdateUserImageInput {
+  image: Upload!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
 input EventInput {
   placeId: String!
   title: String!
@@ -278,9 +293,6 @@ input EventInput {
   categories: [Int!]!
 }
 
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
-
 input CategoryInput {
   translations: [CategoryTranslationInput!]!
 }
@@ -288,4 +300,8 @@ input CategoryInput {
 input CategoryTranslationInput {
   name: String!
   language: Language!
+}
+
+type Subscription {
+  uploadUserImageProgress(userId: Int!): Progress!
 }

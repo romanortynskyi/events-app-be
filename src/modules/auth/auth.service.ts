@@ -1,7 +1,9 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -13,12 +15,15 @@ import { DataSource, Repository } from 'typeorm'
 import { OAuth2Client } from 'google-auth-library'
 import Axios from 'axios'
 import { instanceToPlain } from 'class-transformer'
+import * as AWS from 'aws-sdk'
+import { PubSub } from 'graphql-subscriptions'
 
 import UserEntity from 'src/entities/user.entity'
 import { getObjectWithoutKeys } from 'src/utils/get-object-without-keys'
 import {
   EMAIL_ALREADY_EXISTS,
   INCORRECT_RECOVERY_CODE,
+  INTERNAL_SERVER_ERROR,
   USER_NOT_FOUND,
   WRONG_EMAIL_OR_PASSWORD,
 } from 'src/enums/error-messages'
@@ -36,12 +41,18 @@ import FileEntity from 'src/entities/file.entity'
 import AuthProvider from 'src/enums/auth-provider.enum'
 import OpenSearchService from '../open-search/open-search.service'
 import OpenSearchIndex from 'src/enums/open-search-index.enum'
+import FileUpload from 'src/models/file-upload'
+import File from 'src/models/file'
+import Folder from 'src/enums/folder.enum'
+import SubscriptionName from 'src/enums/subscription-name.enum'
 
 @Injectable()
 class AuthService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @Inject('PUB_SUB')
+    private readonly pubSub: PubSub,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly uploadService: UploadService,
@@ -329,6 +340,66 @@ class AuthService {
       },
       { password: hashedPassword },
     )
+  }
+
+  async updateUserImage(
+    id: number,
+    filePromise: Promise<FileUpload>,
+    progressCallback: (progress: AWS.S3.ManagedUpload.Progress) => Promise<void>,
+  ): Promise<File> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        image: true,
+      },
+    })
+
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND)
+    }
+
+    const imageEntity = new FileEntity()
+
+    await this.dataSource.transaction(async (entityManager) => {  
+      if (user.image && user.image.filename) {
+        const imageId = user.image.id
+
+        await this.uploadService.deleteFile(user.image.filename)
+  
+        user.image = null
+
+        await entityManager.save(UserEntity, user)
+        await entityManager.delete(FileEntity, imageId)
+      }
+
+      const file = await filePromise
+  
+      const imageUploadResponse = await this.uploadService.uploadFile(
+        file,
+        Folder.UserImages,
+        progressCallback,
+      )
+  
+      imageEntity.src = imageUploadResponse.Location
+      imageEntity.filename = imageUploadResponse.Key
+      imageEntity.provider = FileProvider.Custom
+
+      user.image = imageEntity
+
+      await entityManager.save(FileEntity, imageEntity)
+      await entityManager.save(UserEntity, user)
+    })
+
+    return {
+      id: imageEntity.id,
+      src: imageEntity.src,
+      filename: imageEntity.filename,
+      provider: imageEntity.provider,
+      createdAt: imageEntity.createdAt,
+      updatedAt: imageEntity.updatedAt,
+    }
   }
 
   async getUserByToken(bearerToken: string) {

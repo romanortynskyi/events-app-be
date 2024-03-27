@@ -11,10 +11,10 @@ class UploadService {
   s3: AWS.S3
 
   constructor(private config: ConfigService) {
-    this.bucket = config.get('AWS_BUCKET')
+    this.bucket = config.get('S3_BUCKET')
     this.s3 = new AWS.S3({
-      accessKeyId: config.get('AWS_ACCESS_KEY'),
-      secretAccessKey: config.get('AWS_SECRET_ACCESS_KEY'),
+      accessKeyId: config.get('S3_ACCESS_KEY'),
+      secretAccessKey: config.get('S3_SECRET_ACCESS_KEY'),
     })
   }
 
@@ -44,12 +44,11 @@ class UploadService {
     const { filename, createReadStream } = await file
     const extension = path.extname(filename)
 
-    const key = path.join(folder, `${uuid()}${extension}`)
+    const key = `${folder}/${uuid()}${extension}`
     const params: AWS.S3.PutObjectRequest = {
       Bucket: this.bucket,
       Key: key,
       Body: createReadStream(),
-      ACL: 'public-read',
       ContentType: file.mimetype,
       ContentDisposition: 'inline',
     }
@@ -66,11 +65,12 @@ class UploadService {
 
   async deleteFile(key: string) {
     const options = {
-      Bucket: this.config.get('AWS_BUCKET'),
+      Bucket: this.config.get('S3_BUCKET'),
       Key: key,
     }
 
     this.s3.deleteObject(options, (err, result) => {
+      console.error(err)
       if (err) {
         throw new InternalServerErrorException(INTERNAL_SERVER_ERROR)
       }
